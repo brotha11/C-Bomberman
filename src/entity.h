@@ -1,0 +1,31 @@
+#ifndef ENTITY_H
+#define ENTITY_H
+
+#include "math.h"
+#include "collision.h"
+#include "fire.h"
+#include "stdio.h"
+#include "graphics/sprite.h"
+
+struct entity {
+    int x,y;
+    int width, height;
+    int facing_x, facing_y;
+
+    float hspeed, vspeed;
+    float max_speed;
+
+    float sub_x, sub_y;
+    int final_x, final_y;
+
+    bool alive;
+    Sprite sprite;
+};
+typedef struct entity Entity;
+
+Entity new_entity(int x, int y, int width, int height, float max, int spr);
+void e_move(Entity* entity, Collision* collision);
+void e_update(Entity* entity, Collision* collision, Fire** fires);
+int e_sign(int x);
+
+#endif
