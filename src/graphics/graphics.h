@@ -36,6 +36,7 @@ struct graphics {
     SDL_Rect rect;
 
     Sprite_data* sprites;
+    Sprite background;
 
     float x_multiplier;
     float y_multiplier;

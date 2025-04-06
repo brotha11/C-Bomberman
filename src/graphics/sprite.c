@@ -8,6 +8,8 @@ Sprite new_sprite(int w, int h) {
     tex.frame_rect.h = tex.height = h;
 
     tex.frame_x = tex.frame_y = 0;
+    tex.x_off = tex.y_off = 0;
+    tex.frame_x_max = 0;
 
     tex.image_change = tex.image_speed = 0;
     tex.sprite = 0;
@@ -37,14 +39,22 @@ SDL_Texture* load_sprite(const char* path, SDL_Renderer* renderer) {
 
 void animate_sprite(Sprite* sprite) {
 
-    if(sprite->image_speed != 0) {
+    if(sprite->image_speed > 0) {
         if (sprite->image_change > 0) sprite->image_change--;
         else {
-            sprite->frame_x = (sprite->frame_x += 1)%4;
+            sprite->frame_x = (sprite->frame_x += 1)%sprite->frame_x_max;
             sprite->image_change = sprite->image_speed;
         }
-    }
 
+        // Update 
+        sprite->frame_rect.x = sprite->frame_rect.w * sprite->frame_x;
+        sprite->frame_rect.y = sprite->frame_rect.h * sprite->frame_y;
+    }
+}
+
+void animate_sprite_timer(Sprite* sprite, int timer, int timer_max) {
+    sprite->frame_x = (int)((1.0f - ((float)timer / timer_max)) * sprite->frame_x_max);
+    sprite->frame_x = sprite->frame_x%sprite->frame_x_max;
     // Update 
     sprite->frame_rect.x = sprite->frame_rect.w * sprite->frame_x;
     sprite->frame_rect.y = sprite->frame_rect.h * sprite->frame_y;

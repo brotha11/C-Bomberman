@@ -18,19 +18,18 @@ void init_game(Game* game) {
 void update(Game* game) {
 
     check_inputs(&game->controller);
-    p_update(&game->player, &game->controller, game->collision, &game->bombs, &game->fires);
-    b_update(&game->bombs, &game->fires, game->collision);
+    p_update(&game->player, &game->controller, &game->collision, &game->bombs, &game->fires);
+    b_update(&game->bombs, &game->fires, &game->collision);
     f_update(&game->fires, &game->bombs);
     bri_update(&game->bricks, &game->fires, &game->collision);
 
-    if (!game->player.base.alive) {
+    if (!game->player.base.alive && game->player.death_timer == 0) {
         start_room(game);
     }
-
 }
 
 void free_room(Game* game) {
-    free_all_bombs(&game->bombs);
+    free_all_bombs(&game->bombs, &game->collision);
     free_all_fires(&game->fires);
     free_all_bricks(&game->bricks, &game->collision);
     free_collisions(&game->collision);
@@ -54,7 +53,6 @@ void start_room(Game* game) {
     }
 
     game->player = new_player(s_x-16,s_y-16,16,16,1.25,BOMBER_WHITE);
-    game->player.base.sprite.image_speed = 8;
 }
 
 void render(Game* game) {
@@ -77,6 +75,6 @@ void free_game(Game* game) {
     free_graphics(&game->graphics);
     free_all_bricks(&game->bricks, &game->collision);
     free_collisions(&game->collision);
-    free_all_bombs(&game->bombs);
+    free_all_bombs(&game->bombs, &game->collision);
     free_all_fires(&game->fires);
 }

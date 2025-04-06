@@ -5,7 +5,16 @@
 #define BOMBER_WHITE 0
 #define BOMBER_WHITE_PATH "res/bomberman_w.png"
 
-#define TEXTURE_AMOUNT 1
+#define BOMB 1
+#define BOMB_PATH "res/bomb.png"
+
+#define FIRE 2
+#define FIRE_PATH "res/fire.png"
+
+#define MAP_01 3
+#define MAP_01_PATH "res/map_01.png"
+
+#define TEXTURE_AMOUNT 4
 #define SPR 0
 #define SPR_WIDTH 1
 #define SPR_HEIGHT 2
@@ -24,6 +33,7 @@ typedef struct sprite {
     int width, height;
 
     int x_off, y_off;
+    int frame_x_max;
 
 
 } Sprite;
@@ -31,5 +41,6 @@ typedef struct sprite {
 SDL_Texture* load_sprite(const char* path,  SDL_Renderer* renderer);
 Sprite new_sprite(int w, int h);
 void animate_sprite(Sprite* sprite);
+void animate_sprite_timer(Sprite* sprite, int timer, int timer_max);
 
 #endif 

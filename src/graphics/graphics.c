@@ -18,9 +18,27 @@ void init_graphics(Graphics* graphics) {
     // Load textures
     graphics->sprites = (Sprite_data*)malloc(TEXTURE_AMOUNT * sizeof(Sprite_data));
 
+    // White bomber
     graphics->sprites[BOMBER_WHITE].sprite = load_sprite(BOMBER_WHITE_PATH, graphics->renderer);
-    graphics->sprites[BOMBER_WHITE].spr_width = 16;
+    graphics->sprites[BOMBER_WHITE].spr_width = 18;
     graphics->sprites[BOMBER_WHITE].spr_height = 24;
+
+    // Bombs
+    graphics->sprites[BOMB].sprite = load_sprite(BOMB_PATH, graphics->renderer);
+    graphics->sprites[BOMB].spr_width = 16;
+    graphics->sprites[BOMB].spr_height = 16;
+
+    // Fire exp
+    graphics->sprites[FIRE].sprite = load_sprite(FIRE_PATH, graphics->renderer);
+    graphics->sprites[FIRE].spr_width = 16;
+    graphics->sprites[FIRE].spr_height = 16;
+
+    // Map 01
+    graphics->sprites[MAP_01].sprite = load_sprite(MAP_01_PATH, graphics->renderer);
+    graphics->sprites[MAP_01].spr_width = 256;
+    graphics->sprites[MAP_01].spr_height = 224;
+
+    graphics->background = new_sprite(256,224);
 }
 
 bool graphics_event(Graphics* graphics) {
@@ -41,12 +59,13 @@ bool graphics_event(Graphics* graphics) {
 
 void render_game(Graphics* graphics, Entity* entity, Collision* collision, Bomb** bombs, Fire** fires, Brick** bricks, Player* player) {
     
-    animate_sprite(&player->base.sprite);
-    
     SDL_RenderClear(graphics->renderer);
 
+    // Map
+    tex_render(graphics, &graphics->background, MAP_01, 0,0);
+
     f_render(graphics, fires);
-    coll_render(graphics, collision);
+    //coll_render(graphics, collision);
     bri_render(graphics, bricks);
     b_render(graphics, bombs);
     //e_render(graphics, entity);
@@ -81,25 +100,17 @@ void tex_render(Graphics* graphics, Sprite* sprite, int spr, int x, int y) {
 }
 
 void b_render(Graphics* graphics, Bomb** bombs) {
-
-    SDL_SetRenderDrawColor(graphics->renderer, 150,150,150,255);
-    
     Bomb* current = *bombs;
     
     // Recorremos todos los bloques de colisión
     while (current != NULL) {
-
-        rect_resolution_fix(graphics, &graphics->rect, current->x, current->y, current->width, current->height);
-        SDL_RenderFillRect(graphics->renderer, &graphics->rect);
-
+        tex_render(graphics, &current->sprite, BOMB, current->x, current->y);
         current = current->next;
     }
-
-    SDL_SetRenderDrawColor(graphics->renderer, 20,20,20,255);
 }
 
 void f_render(Graphics* graphics, Fire** fires) {
-    SDL_SetRenderDrawColor(graphics->renderer, 255,80,0,255);
+    SDL_SetRenderDrawColor(graphics->renderer, 20,80,100,255);
     
     Fire* current = *fires;
     
@@ -107,10 +118,8 @@ void f_render(Graphics* graphics, Fire** fires) {
     while (current != NULL) {
 
         if (current->visible) {
-            rect_resolution_fix(graphics, &graphics->rect, current->x, current->y, current->width, current->height);
-            SDL_RenderFillRect(graphics->renderer, &graphics->rect);
+            tex_render(graphics, &current->sprite, FIRE, current->x, current->y);
         }
-
         current = current->next;
     }
 

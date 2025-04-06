@@ -1,7 +1,7 @@
 #include "fire.h"
 #include "bomb.h"
 
-void add_fire(Fire** fires, Bomb** bombs, Collision* collision, int x, int y, int direction, int length, bool visible) {
+void add_fire(Fire** fires, Bomb** bombs, Collision** collision, int x, int y, int direction, int length, bool visible, bool center) {
     // Si length es menor o igual a 0, terminamos la recursión
 
     Fire *new = (Fire*)malloc(sizeof(Fire));
@@ -11,31 +11,76 @@ void add_fire(Fire** fires, Bomb** bombs, Collision* collision, int x, int y, in
 
     new->direction = direction;
     new->length = length;
-    new->timer = 45;
+    new->timer = EXPLOSION_TIME;
     new->visible = visible;
+    new->swap_visible = visible;
+    new->center = center;
 
     new->height = 16;
     new->width = 16;
 
-    // Para fuego vertical (arriba o abajo)
+    new->sprite = new_sprite(16,16);
+    new->sprite.frame_x_max = 7;
+
+// Para fuego vertical (arriba o abajo)
     if (direction == UP || direction == DOWN) {
         m_x = 6; // Ajuste para alinear correctamente
         new->width = 4; // Reducimos el ancho para fuego vertical
 
-        if (direction == UP) next_y = -16; // Fuego hacia arriba
-        else next_y = 16; // Fuego hacia abajo
+        if (direction == UP) {
+            next_y = -16; // Fuego hacia arriba
+            if (length == 0) {
+                m_y = 4;
+                new->height = 16 - 4; // Ajuste de altura para la última propagación
+            }
+        } else {
+            next_y = 16; // Fuego hacia abajo
+            if (length == 0) {
+                //m_y = -4;
+                new->height = 16 - 4; // Ajuste de altura para la última propagación
+            }
+        }
 
     } else { // Para fuego horizontal (izquierda o derecha)
         m_y = 6; // Ajuste para alinear correctamente
         new->height = 4; // Reducimos la altura para fuego horizontal
 
-        if (direction == LEFT) next_x = -16; // Fuego hacia la izquierda
-        else next_x = 16; // Fuego hacia la derecha
+        if (direction == LEFT) {
+            next_x = -16; // Fuego hacia la izquierda
+            if (length == 0) {
+                m_x = 4;
+                new->width = 16 - 4; // Ajuste de ancho para la última propagación
+            }
+        } else {
+            next_x = 16; // Fuego hacia la derecha
+            if (length == 0) {
+               // m_x = -4;
+                new->width = 16 - 4; // Ajuste de ancho para la última propagación
+            }
+        }
     }
 
     // Asignamos las coordenadas del fuego
     new->x = x + m_x;
     new->y = y + m_y;
+
+    new->sprite.x_off = -abs(m_x);
+    new->sprite.y_off = -abs(m_y);
+
+    // Fire image
+    if (!center) {
+        if (length == 0) {
+            if (direction == UP) new->sprite.frame_y = 4;
+            else if (direction == DOWN) new->sprite.frame_y = 6;
+            else if (direction == LEFT) new->sprite.frame_y = 1;
+            else if (direction == RIGHT) new->sprite.frame_y = 3;
+        } else {
+            if (direction == UP || direction == DOWN) new->sprite.frame_y = 5;
+            else if (direction == LEFT || direction == RIGHT) new->sprite.frame_y = 2;
+        }
+    } else {
+        new->sprite.frame_y = 0;
+    }
 
     // Insertamos el nuevo segmento de fuego en la lista
     new->next = *fires;
@@ -43,9 +88,10 @@ void add_fire(Fire** fires, Bomb** bombs, Collision* collision, int x, int y, in
 
     if (length > 0)
     {
-        if (!coll_bomb(bombs, new->x + next_x - m_x, new->y + next_y - m_y, new->width, new->height) && !coll_meeting(collision, new->x + next_x - m_x, new->y + next_y - m_y, new->width, new->height))
-            add_fire(fires, bombs, collision, new->x + next_x - m_x, new->y + next_y - m_y, direction, length - 1, true);
-        else add_fire(fires, bombs, collision, new->x + next_x - m_x, new->y + next_y - m_y, direction, 0, false);
+        if (!coll_bomb(bombs, new->x + next_x - m_x, new->y + next_y - m_y, new->width, new->height) 
+            && !coll_meeting(collision, new->x + next_x - m_x, new->y + next_y - m_y, new->width, new->height))
+            add_fire(fires, bombs, collision, new->x + next_x - m_x, new->y + next_y - m_y, direction, length - 1, true, false);
+        else add_fire(fires, bombs, collision, new->x + next_x - m_x, new->y + next_y - m_y, direction, 0, false, false);
     }
 }
 
@@ -60,13 +106,25 @@ void f_update(Fire** fires, Bomb** bombs) {
         //Blow up bombs
         Bomb* blow = coll_bomb(bombs,current->x,current->y,current->width, current->height);
         if (blow) {
-            if (blow->timer > 5) blow->timer = 5;
+            if (blow->timer > 8) blow->timer = 8;
         }
 
         if (current->timer != 0) current->timer--;
         else {
             free_fire(fires,current);
         }
+
+        // Animation
+        if (current->swap_visible) {
+            Fire* coll = coll_fire_exclude(fires, current, current->x, current->y, current->width, current->height);
+
+            if (coll && coll->timer >= current->timer && !current->center) {
+                current->visible = false;
+            } else {
+                current->visible = true;
+            }
+        }
+        animate_sprite_timer(&current->sprite, current->timer, EXPLOSION_TIME);
 
         current = next_f;
     }
@@ -77,6 +135,29 @@ Fire* coll_fire(Fire** head, int x, int y, int width, int height) {
     
     // Recorremos todos los bloques de colisión
     while (current != NULL) {
+
+        // Verificamos si hay colisión entre la hitbox del personaje y el bloque
+        if (x + width > current->x && x < current->x + current->width &&  // Revisa si el personaje está dentro del ancho del bloque
+            y + height > current->y && y < current->y + current->height) {  // Revisa si el personaje está dentro de la altura del bloque
+            return current;  // Hay colisión
+        }
+
+        current = current->next;
+    }
+    return NULL;  // No hay colisión
+}
+
+
+Fire* coll_fire_exclude(Fire** head, Fire* ignore, int x, int y, int width, int height) {
+    Fire* current = *head;
+    
+    // Recorremos todos los bloques de colisión
+    while (current != NULL) {
+
+        if (current == ignore) {
+            current = current->next;
+            continue;
+        }
 
         // Verificamos si hay colisión entre la hitbox del personaje y el bloque
         if (x + width > current->x && x < current->x + current->width &&  // Revisa si el personaje está dentro del ancho del bloque

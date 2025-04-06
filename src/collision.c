@@ -11,11 +11,33 @@ void add_collision(Collision** head, int x, int y, int width, int height) {
     *head = new_Collision;
 }
 
-Collision* coll_meeting(Collision* head, int x, int y, int width, int height) {
-    Collision* current = head;
+Collision* coll_meeting(Collision** head, int x, int y, int width, int height) {
+    Collision* current = *head;
     
     // Recorremos todos los bloques de colisión
     while (current != NULL) {
+        // Verificamos si hay colisión entre la hitbox del personaje y el bloque
+        if (x + width > current->x && x < current->x + current->width &&  // Revisa si el personaje está dentro del ancho del bloque
+            y + height > current->y && y < current->y + current->height) {  // Revisa si el personaje está dentro de la altura del bloque
+            return current;  // Hay colisión
+        }
+
+        current = current->next;
+    }
+    return NULL;  // No hay colisión
+}
+
+Collision* coll_meeting_ext(Collision** head, int x, int y, int true_x, int true_y, int width, int height) {
+    Collision* current = *head;
+    
+    // Recorremos todos los bloques de colisión
+    while (current != NULL) {
+
+        if (true_x + width > current->x && true_x < current->x + current->width &&  // Revisa si el personaje está dentro del ancho del bloque
+            true_y + height > current->y && true_y < current->y + current->height) {
+                current = current->next;
+                continue;
+            }
 
         // Verificamos si hay colisión entre la hitbox del personaje y el bloque
         if (x + width > current->x && x < current->x + current->width &&  // Revisa si el personaje está dentro del ancho del bloque

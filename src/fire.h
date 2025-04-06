@@ -5,8 +5,10 @@
 #define DOWN 1
 #define LEFT 2
 #define RIGHT 3
+#define EXPLOSION_TIME 30
 
 #include "collision.h"
+#include "graphics/sprite.h"
 
 struct bomb;
 typedef struct bomb Bomb;
@@ -19,13 +21,17 @@ struct fire {
     int length;
     int direction;
     bool visible;
+    bool swap_visible;
+    bool center;
 
+    Sprite sprite;
     struct fire* next;
 };
 typedef struct fire Fire;
 
-void add_fire(Fire** fires, Bomb** bombs, Collision* collision, int x, int y, int direction, int length, bool visible);
+void add_fire(Fire** fires, Bomb** bombs, Collision** collision, int x, int y, int direction, int length, bool visible, bool center);
 Fire* coll_fire(Fire** head, int x, int y, int width, int height);
+Fire* coll_fire_exclude(Fire** head, Fire* ignore, int x, int y, int width, int height);
 void f_update(Fire** fires, Bomb** bombs);
 void free_fire(Fire** fires, Fire* fire);
 

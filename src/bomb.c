@@ -1,22 +1,32 @@
 #include "bomb.h"
 #include "fire.h"
 
-void add_bomb(Bomb** head, int col, int row, int blast) {
+void add_bomb(Bomb** head, Collision** colls, int* owner_bomb, int col, int row, int blast) {
     Bomb* new_bomb = (Bomb*)malloc(sizeof(Bomb));
     
+    add_collision(colls, col, row, 16, 16);
+
+    new_bomb->coll = *colls; // Apunta a la colisión recién creada
     new_bomb->x = col;
     new_bomb->y = row;
     new_bomb->blast_radius = blast;
 
-    new_bomb->timer = 120;
+    new_bomb->timer = 150;
 
     new_bomb->width = 16; new_bomb->height = 16;
+
+    new_bomb->owner = owner_bomb;
+    (*new_bomb->owner)++;
+
+    new_bomb->sprite = new_sprite(16,16);
+    new_bomb->sprite.image_speed = 16;
+    new_bomb->sprite.frame_x_max = 3;
 
     new_bomb->next = *head;
     *head = new_bomb;
 }
 
-void b_update(Bomb** head, Fire** fires, Collision* collision) {
+void b_update(Bomb** head, Fire** fires, Collision** collision) {
     Bomb* current = *head;
     Bomb* next_bomb = current;
 
@@ -29,18 +39,21 @@ void b_update(Bomb** head, Fire** fires, Collision* collision) {
             b_explode(head, current, fires, collision);
         }
 
+        // Animation
+        animate_sprite(&current->sprite);
+
         current = next_bomb;
     }
 }
 
-void b_explode(Bomb** head, Bomb* bomb, Fire** fires, Collision* collision) {
+void b_explode(Bomb** head, Bomb* bomb, Fire** fires, Collision** collision) {
 
-    add_fire(fires, head, collision, bomb->x, bomb->y, UP, bomb->blast_radius,true);
-    add_fire(fires, head, collision, bomb->x, bomb->y, DOWN, bomb->blast_radius,true);
-    add_fire(fires, head, collision, bomb->x, bomb->y, LEFT, bomb->blast_radius, true);
-    add_fire(fires, head, collision, bomb->x, bomb->y, RIGHT, bomb->blast_radius, true);
+    add_fire(fires, head, collision, bomb->x, bomb->y, UP, bomb->blast_radius,true, true);
+    add_fire(fires, head, collision, bomb->x, bomb->y, DOWN, bomb->blast_radius,true, true);
+    add_fire(fires, head, collision, bomb->x, bomb->y, LEFT, bomb->blast_radius, true, true);
+    add_fire(fires, head, collision, bomb->x, bomb->y, RIGHT, bomb->blast_radius, true, true);
 
-    free_bomb(head,bomb);
+    free_bomb(head, collision, bomb);
 }
 
 Bomb* coll_bomb(Bomb** head, int x, int y, int width, int height) {
@@ -60,12 +73,15 @@ Bomb* coll_bomb(Bomb** head, int x, int y, int width, int height) {
     return NULL;  // No hay colisión
 }
 
-void free_bomb(Bomb** head, Bomb* bomb) {
+void free_bomb(Bomb** head, Collision** head_coll, Bomb* bomb) {
     Bomb *temp = *head, *prev = NULL;
   
     if (temp != NULL && temp == bomb) { 
         *head = temp->next; // Changed head 
+        free_single(head_coll, temp->coll);
         free(temp); // free old head 
+        (*temp->owner)--;
+
         return; 
     } 
   
@@ -83,15 +99,18 @@ void free_bomb(Bomb** head, Bomb* bomb) {
     // Unlink the node from linked list 
     prev->next = temp->next; 
   
+    (*temp->owner)--;
+    free_single(head_coll, temp->coll);
     free(temp); // Free memory 
 }
 
-void free_all_bombs(Bomb** head) {
+void free_all_bombs(Bomb** head, Collision** head_coll) {
     Bomb* current = *head;
     Bomb* next;
 
     while (current != NULL) {
         next = current->next;  // Guardar referencia al siguiente nodo
+        free_single(head_coll, current->coll);
         free(current);
         current = next;  // Mover al siguiente nodo
     }

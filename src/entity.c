@@ -22,7 +22,7 @@ Entity new_entity(int x, int y, int width, int height, float max, int spr) {
     return new;
 }
 
-void e_update(Entity* entity, Collision* collision, Fire** fires) {
+void e_update(Entity* entity, Collision** collision, Fire** fires) {
 
     e_move(entity, collision);
 
@@ -41,7 +41,7 @@ void e_update(Entity* entity, Collision* collision, Fire** fires) {
     }
 }
 
-void e_move(Entity* entity, Collision* collision) {
+void e_move(Entity* entity, Collision** collision) {
 
     float slide_factor = 2.75f;
 
@@ -51,7 +51,8 @@ void e_move(Entity* entity, Collision* collision) {
 
     for (int i = 0; i < abs(entity->final_x); ++i) {
 
-        Collision* coll = coll_meeting(collision, entity->x + e_sign(entity->final_x), entity->y, entity->width, entity->height);
+        Collision* coll = coll_meeting_ext(collision, entity->x + e_sign(entity->final_x), 
+            entity->y, entity->x, entity->y, entity->width, entity->height);
 
         if (!coll) {
             entity->x += e_sign(entity->hspeed); 
@@ -73,7 +74,8 @@ void e_move(Entity* entity, Collision* collision) {
 
     for (int i = 0; i < abs(entity->final_y); ++i) {
 
-        Collision* coll = coll_meeting(collision, entity->x, entity->y + e_sign(entity->final_y), entity->width, entity->height);
+        Collision* coll = coll_meeting_ext(collision, entity->x, entity->y + e_sign(entity->final_y), 
+            entity->x, entity->y, entity->width, entity->height);
 
         if (!coll) {
             entity->y += e_sign(entity->vspeed); 
