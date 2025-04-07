@@ -53,9 +53,11 @@ void animate_sprite(Sprite* sprite) {
 }
 
 void animate_sprite_timer(Sprite* sprite, int timer, int timer_max) {
-    sprite->frame_x = (int)((1.0f - ((float)timer / timer_max)) * sprite->frame_x_max);
-    sprite->frame_x = sprite->frame_x%sprite->frame_x_max;
-    // Update 
-    sprite->frame_rect.x = sprite->frame_rect.w * sprite->frame_x;
-    sprite->frame_rect.y = sprite->frame_rect.h * sprite->frame_y;
+    if (sprite->frame_x != sprite->frame_x_max) {
+        sprite->frame_x = (int)((1.0f - ((float)timer / timer_max)) * sprite->frame_x_max);
+        sprite->frame_x = sprite->frame_x%sprite->frame_x_max;
+        // Update 
+        sprite->frame_rect.x = sprite->frame_rect.w * sprite->frame_x;
+        sprite->frame_rect.y = sprite->frame_rect.h * sprite->frame_y;
+    }
 }

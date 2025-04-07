@@ -8,13 +8,15 @@ void add_brick(Brick** bricks, Collision** head, int x, int y, int width, int he
     new_brick->coll = *head; // Apunta a la colisión recién creada
     new_brick->broken = false;
     new_brick->next = *bricks;
-    new_brick->timer = 45;
+    new_brick->timer = EXPLOSION_TIME;
+    new_brick->sprite = new_sprite(16,16);
+    new_brick->sprite.frame_x_max = MAX_BRICK_FRAMES;
+    new_brick->visible = true;
 
     *bricks = new_brick;
 }
 
-void bri_update(Brick** bricks, Fire** fires, Collision** collision) {
-    
+void bri_update(Brick** bricks, Fire** fires, Collision** collision, Power_up** powers) {
     Brick* current = *bricks;
     Brick* next_brick;
 
@@ -24,17 +26,53 @@ void bri_update(Brick** bricks, Fire** fires, Collision** collision) {
 
         if (current->broken) {
             if (current->timer != 0) current->timer--;
-            else free_brick(bricks, current, collision);
+            else {
+                spawn_power(powers, current->coll->x, current->coll->y);
+                free_brick(bricks, current, collision);
+            }
         }
 
         if (coll_fire(fires,current->coll->x,current->coll->y,current->coll->width, current->coll->height)) {
             current->broken = true;
         }
 
+        // Animate
+
+        if (current->broken) {
+            if (current->sprite.frame_x < MAX_BRICK_FRAMES) animate_sprite_timer(&current->sprite, current->timer, EXPLOSION_TIME);
+            if (current->timer == 1) current->visible = false;
+        }
+
         current = next_brick;
     }
 }
 
+void spawn_power(Power_up** powers, int x, int y) {
+    unsigned seed = (clock() + x * y);
+    srand(seed);
+    if (rand()%100 <= 7) {
+        add_powerup(powers,x,y,FIRE_UP);
+        return;
+    }
+
+    srand(seed* 2);
+    if (rand()%100 <= 7) {
+        add_powerup(powers,x,y,BOMB_UP);
+        return;
+    }
+
+    srand(seed* 3);
+    if (rand()%100 <= 7) {
+        add_powerup(powers,x,y,SPEED_UP);
+        return;
+    }
+
+    srand(seed* 4);
+    if (rand()%100 <= 3) {
+        add_powerup(powers,x,y,BOMB_LINE);
+        return;
+    }
+}
 
 void free_all_bricks(Brick** head, Collision** head_coll) {
     Brick* current = *head;

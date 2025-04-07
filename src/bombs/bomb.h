@@ -2,8 +2,9 @@
 #define BOMB_H
 
 #include "stdlib.h"
-#include "collision.h"
-#include "graphics/sprite.h"
+#include "../blocks/collision.h"
+#include "../graphics/sprite.h"
+#include "../pickups/powerup.h"
 
 struct fire;
 typedef struct fire Fire;
@@ -28,7 +29,7 @@ Bomb* coll_bomb(Bomb** head, int x, int y, int width, int height);
 void free_bomb(Bomb** head, Collision** head_coll, Bomb* bomb);
 void free_all_bombs(Bomb** head, Collision** head_coll);
 
-void b_update(Bomb** head, Fire** fire, Collision** collision);
-void b_explode(Bomb** head, Bomb* bomb, Fire** fire, Collision** collision);
+void b_update(Bomb** head, Fire** fire, Collision** collision, Power_up** powers);
+void b_explode(Bomb** head, Bomb* bomb, Fire** fire, Collision** collision, Power_up** powers);
 
 #endif

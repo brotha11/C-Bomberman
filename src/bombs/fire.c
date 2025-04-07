@@ -1,7 +1,8 @@
 #include "fire.h"
 #include "bomb.h"
 
-void add_fire(Fire** fires, Bomb** bombs, Collision** collision, int x, int y, int direction, int length, bool visible, bool center) {
+void add_fire(Fire** fires, Bomb** bombs, Collision** collision, Power_up** powers,
+    int x, int y, int direction, int length, bool visible, bool center) {
     // Si length es menor o igual a 0, terminamos la recursión
 
     Fire *new = (Fire*)malloc(sizeof(Fire));
@@ -11,16 +12,17 @@ void add_fire(Fire** fires, Bomb** bombs, Collision** collision, int x, int y, i
 
     new->direction = direction;
     new->length = length;
-    new->timer = EXPLOSION_TIME;
     new->visible = visible;
     new->swap_visible = visible;
     new->center = center;
+
+    new->timer = EXPLOSION_TIME;
 
     new->height = 16;
     new->width = 16;
 
     new->sprite = new_sprite(16,16);
-    new->sprite.frame_x_max = 7;
+    new->sprite.frame_x_max = 8;
 
 // Para fuego vertical (arriba o abajo)
     if (direction == UP || direction == DOWN) {
@@ -89,9 +91,10 @@ void add_fire(Fire** fires, Bomb** bombs, Collision** collision, int x, int y, i
     if (length > 0)
     {
         if (!coll_bomb(bombs, new->x + next_x - m_x, new->y + next_y - m_y, new->width, new->height) 
-            && !coll_meeting(collision, new->x + next_x - m_x, new->y + next_y - m_y, new->width, new->height))
-            add_fire(fires, bombs, collision, new->x + next_x - m_x, new->y + next_y - m_y, direction, length - 1, true, false);
-        else add_fire(fires, bombs, collision, new->x + next_x - m_x, new->y + next_y - m_y, direction, 0, false, false);
+            && !coll_meeting(collision, new->x + next_x - m_x, new->y + next_y - m_y, new->width, new->height)
+                && !grab_powerup(powers, new->x + next_x - m_x, new->y + next_y - m_y, 16, 16))
+            add_fire(fires, bombs, collision, powers, new->x + next_x - m_x, new->y + next_y - m_y, direction, length - 1, true, false);
+        else add_fire(fires, bombs, collision, powers, new->x + next_x - m_x, new->y + next_y - m_y, direction, 0, false, false);
     }
 }
 
@@ -106,7 +109,7 @@ void f_update(Fire** fires, Bomb** bombs) {
         //Blow up bombs
         Bomb* blow = coll_bomb(bombs,current->x,current->y,current->width, current->height);
         if (blow) {
-            if (blow->timer > 8) blow->timer = 8;
+            if (blow->timer > 5) blow->timer = 5;
         }
 
         if (current->timer != 0) current->timer--;
@@ -114,11 +117,16 @@ void f_update(Fire** fires, Bomb** bombs) {
             free_fire(fires,current);
         }
 
+        if (current->timer == 1) {
+            current->swap_visible = false;
+            current->visible = false;
+        }
+
         // Animation
         if (current->swap_visible) {
             Fire* coll = coll_fire_exclude(fires, current, current->x, current->y, current->width, current->height);
 
-            if (coll && coll->timer >= current->timer && !current->center) {
+            if (coll && coll->timer > current->timer && !current->center) {
                 current->visible = false;
             } else {
                 current->visible = true;

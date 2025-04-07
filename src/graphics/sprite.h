@@ -14,7 +14,16 @@
 #define MAP_01 3
 #define MAP_01_PATH "res/map_01.png"
 
-#define TEXTURE_AMOUNT 4
+#define BRICK_01 4
+#define BRICK_01_PATH "res/brick_01.png"
+
+#define POWER_UPS 5
+#define POWER_UPS_PATH "res/power_ups.png"
+
+#define ITEM_BURN 6
+#define ITEM_BURN_PATH "res/item_burn.png"
+
+#define TEXTURE_AMOUNT 7
 #define SPR 0
 #define SPR_WIDTH 1
 #define SPR_HEIGHT 2

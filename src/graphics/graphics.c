@@ -20,7 +20,7 @@ void init_graphics(Graphics* graphics) {
 
     // White bomber
     graphics->sprites[BOMBER_WHITE].sprite = load_sprite(BOMBER_WHITE_PATH, graphics->renderer);
-    graphics->sprites[BOMBER_WHITE].spr_width = 18;
+    graphics->sprites[BOMBER_WHITE].spr_width = 20;
     graphics->sprites[BOMBER_WHITE].spr_height = 24;
 
     // Bombs
@@ -37,6 +37,19 @@ void init_graphics(Graphics* graphics) {
     graphics->sprites[MAP_01].sprite = load_sprite(MAP_01_PATH, graphics->renderer);
     graphics->sprites[MAP_01].spr_width = 256;
     graphics->sprites[MAP_01].spr_height = 224;
+
+    graphics->sprites[BRICK_01].sprite = load_sprite(BRICK_01_PATH, graphics->renderer);
+    graphics->sprites[BRICK_01].spr_width = 16;
+    graphics->sprites[BRICK_01].spr_height = 16;
+
+    graphics->sprites[POWER_UPS].sprite = load_sprite(POWER_UPS_PATH, graphics->renderer);
+    graphics->sprites[POWER_UPS].spr_width = 16;
+    graphics->sprites[POWER_UPS].spr_height = 16;
+
+
+    graphics->sprites[ITEM_BURN].sprite = load_sprite(ITEM_BURN_PATH, graphics->renderer);
+    graphics->sprites[ITEM_BURN].spr_width = 16;
+    graphics->sprites[ITEM_BURN].spr_height = 32;
 
     graphics->background = new_sprite(256,224);
 }
@@ -57,7 +70,8 @@ bool graphics_event(Graphics* graphics) {
     return true;
 }
 
-void render_game(Graphics* graphics, Entity* entity, Collision* collision, Bomb** bombs, Fire** fires, Brick** bricks, Player* player) {
+void render_game(Graphics* graphics, Entity* entity, Collision* collision, 
+        Bomb** bombs, Fire** fires, Brick** bricks, Player* player, Power_up** powers) {
     
     SDL_RenderClear(graphics->renderer);
 
@@ -68,6 +82,7 @@ void render_game(Graphics* graphics, Entity* entity, Collision* collision, Bomb*
     //coll_render(graphics, collision);
     bri_render(graphics, bricks);
     b_render(graphics, bombs);
+    pw_render(graphics, powers);
     //e_render(graphics, entity);
 
     /*tex_render(graphics, BOMBER_WHITE, player->base.x, player->base.y, 
@@ -76,16 +91,6 @@ void render_game(Graphics* graphics, Entity* entity, Collision* collision, Bomb*
 
 
     SDL_RenderPresent(graphics->renderer);
-}
-
-void e_render(Graphics* graphics, Entity* entity) {
-
-    SDL_SetRenderDrawColor(graphics->renderer, 255,255,255,125);
-    
-    rect_resolution_fix(graphics, &graphics->rect, entity->x, entity->y, entity->width, entity->height);
-    SDL_RenderFillRect(graphics->renderer, &graphics->rect);
-
-    SDL_SetRenderDrawColor(graphics->renderer, 0,0,0,255);
 }
 
 void tex_render(Graphics* graphics, Sprite* sprite, int spr, int x, int y) {
@@ -97,6 +102,16 @@ void tex_render(Graphics* graphics, Sprite* sprite, int spr, int x, int y) {
 
     SDL_RenderCopy(graphics->renderer, graphics->sprites[spr].sprite, &sprite->frame_rect, &graphics->rect);
 
+}
+
+void e_render(Graphics* graphics, Entity* entity) {
+
+    SDL_SetRenderDrawColor(graphics->renderer, 255,255,255,125);
+    
+    rect_resolution_fix(graphics, &graphics->rect, entity->x, entity->y, entity->width, entity->height);
+    SDL_RenderFillRect(graphics->renderer, &graphics->rect);
+
+    SDL_SetRenderDrawColor(graphics->renderer, 0,0,0,255);
 }
 
 void b_render(Graphics* graphics, Bomb** bombs) {
@@ -127,22 +142,40 @@ void f_render(Graphics* graphics, Fire** fires) {
 }
 
 void bri_render(Graphics* graphics, Brick** bricks) {
-
-    SDL_SetRenderDrawColor(graphics->renderer, 220,80,80,255);
-    
     Brick* current = *bricks;
     
     // Recorremos todos los bloques de colisión
     while (current != NULL) {
 
-        rect_resolution_fix(graphics, &graphics->rect, current->coll->x, current->coll->y, current->coll->width, current->coll->height);
-        SDL_RenderFillRect(graphics->renderer, &graphics->rect);
+        if (!current->visible) {
+            current = current->next;
+            continue;
+        }
+
+        tex_render(graphics, &current->sprite, BRICK_01, current->coll->x, current->coll->y);
 
         current = current->next;
     }
-
-    SDL_SetRenderDrawColor(graphics->renderer, 0,0,0,255);
 }
+
+void pw_render(Graphics* graphics, Power_up** powers) {
+    Power_up* current = *powers;
+    
+    // Recorremos todos los bloques de colisión
+    while (current != NULL) {
+
+        if (current->visible) {
+            if (current->grabable == 1) {
+                tex_render(graphics, &current->sprite, POWER_UPS, current->x, current->y);
+            } else {
+                tex_render(graphics, &current->sprite, ITEM_BURN, current->x, current->y);
+            }
+        }
+
+        current = current->next;
+    }
+}
+
 
 void coll_render(Graphics* graphics, Collision* collision) {
 

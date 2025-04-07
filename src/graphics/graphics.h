@@ -13,11 +13,12 @@
 #include "SDL2/SDL_image.h"
 #include "stdbool.h"
 
-#include "../collision.h"
-#include "../player.h"
-#include "../bomb.h"
-#include "../fire.h"
-#include "../brick.h"
+#include "../blocks/collision.h"
+#include "../entities/player.h"
+#include "../bombs/bomb.h"
+#include "../bombs/fire.h"
+#include "../blocks/brick.h"
+#include "../pickups/powerup.h"
 #include "sprite.h"
 
 typedef struct sprite_data {
@@ -45,7 +46,8 @@ struct graphics {
 typedef struct graphics Graphics;
 
 void init_graphics(Graphics* graphics);
-void render_game(Graphics* graphics, Entity* entity, Collision* collision, Bomb** bombs, Fire** fires, Brick** bricks, Player* player);
+void render_game(Graphics* graphics, Entity* entity, Collision* collision, 
+        Bomb** bombs, Fire** fires, Brick** bricks, Player* player , Power_up** powers);
 
 bool graphics_event(Graphics* graphics);
 
@@ -57,6 +59,7 @@ void coll_render(Graphics* graphics, Collision* collision);
 void b_render(Graphics* graphics, Bomb** bombs);
 void f_render(Graphics* graphics, Fire** fires);
 void bri_render(Graphics* graphics, Brick** bricks);
+void pw_render(Graphics* graphics, Power_up** powers);
 
 void free_graphics(Graphics* graphics);
 

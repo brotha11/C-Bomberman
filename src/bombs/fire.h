@@ -7,8 +7,9 @@
 #define RIGHT 3
 #define EXPLOSION_TIME 30
 
-#include "collision.h"
-#include "graphics/sprite.h"
+#include "../blocks/collision.h"
+#include "../graphics/sprite.h"
+#include "../pickups/powerup.h"
 
 struct bomb;
 typedef struct bomb Bomb;
@@ -29,7 +30,8 @@ struct fire {
 };
 typedef struct fire Fire;
 
-void add_fire(Fire** fires, Bomb** bombs, Collision** collision, int x, int y, int direction, int length, bool visible, bool center);
+void add_fire(Fire** fires, Bomb** bombs, Collision** collision, Power_up** powers,
+    int x, int y, int direction, int length, bool visible, bool center);
 Fire* coll_fire(Fire** head, int x, int y, int width, int height);
 Fire* coll_fire_exclude(Fire** head, Fire* ignore, int x, int y, int width, int height);
 void f_update(Fire** fires, Bomb** bombs);

@@ -1,6 +1,25 @@
-all:
-	// Windows
-	gcc -Iinclude -Llib -o bomberman src/*.c src/graphics/*.c src/input/*.c -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_mixer
+# Variables comunes
+SRC = src/*.c src/blocks/*.c src/entities/*.c src/bombs/*.c src/graphics/*.c src/input/*.c src/pickups/*.c
+LIBS = -lSDL2main -lSDL2 -lSDL2_image -lSDL2_mixer
+CC = gcc
+CFLAGS = -Iinclude -Llib
 
-	// Linux
-	gcc -o bomberman src/*.c src/graphics/*.c src/input/*.c -lSDL2main -lSDL2 -lSDL2_image -lSDL2_mixer -lm
+all: w
+
+# Compilando para Windows
+w: 
+	$(CC) $(CFLAGS) -o bomberman $(SRC) -lmingw32 $(LIBS)
+
+# Compilando para Linux
+l:
+	$(CC) -o bomberman $(SRC) $(LIBS) -lm
+
+gdb:
+	$(CC) -g $(CFLAGS) -o bomberman $(SRC) -lmingw32 $(LIBS)
+
+# Ejecutar
+run:
+	./bomberman
+
+# Declaramos que estas reglas no son archivos
+.PHONY: w l r gdb all

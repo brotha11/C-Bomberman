@@ -19,14 +19,14 @@ void add_bomb(Bomb** head, Collision** colls, int* owner_bomb, int col, int row,
     (*new_bomb->owner)++;
 
     new_bomb->sprite = new_sprite(16,16);
-    new_bomb->sprite.image_speed = 16;
-    new_bomb->sprite.frame_x_max = 3;
+    new_bomb->sprite.image_speed = 14;
+    new_bomb->sprite.frame_x_max = 4;
 
     new_bomb->next = *head;
     *head = new_bomb;
 }
 
-void b_update(Bomb** head, Fire** fires, Collision** collision) {
+void b_update(Bomb** head, Fire** fires, Collision** collision, Power_up** powers) {
     Bomb* current = *head;
     Bomb* next_bomb = current;
 
@@ -36,7 +36,7 @@ void b_update(Bomb** head, Fire** fires, Collision** collision) {
 
         if(current->timer != 0) current->timer--;
         else {
-            b_explode(head, current, fires, collision);
+            b_explode(head, current, fires, collision, powers);
         }
 
         // Animation
@@ -46,12 +46,12 @@ void b_update(Bomb** head, Fire** fires, Collision** collision) {
     }
 }
 
-void b_explode(Bomb** head, Bomb* bomb, Fire** fires, Collision** collision) {
+void b_explode(Bomb** head, Bomb* bomb, Fire** fires, Collision** collision, Power_up** powers) {
 
-    add_fire(fires, head, collision, bomb->x, bomb->y, UP, bomb->blast_radius,true, true);
-    add_fire(fires, head, collision, bomb->x, bomb->y, DOWN, bomb->blast_radius,true, true);
-    add_fire(fires, head, collision, bomb->x, bomb->y, LEFT, bomb->blast_radius, true, true);
-    add_fire(fires, head, collision, bomb->x, bomb->y, RIGHT, bomb->blast_radius, true, true);
+    add_fire(fires, head, collision, powers, bomb->x, bomb->y, UP, bomb->blast_radius,true, true);
+    add_fire(fires, head, collision, powers, bomb->x, bomb->y, DOWN, bomb->blast_radius,true, true);
+    add_fire(fires, head, collision, powers, bomb->x, bomb->y, LEFT, bomb->blast_radius, true, true);
+    add_fire(fires, head, collision, powers, bomb->x, bomb->y, RIGHT, bomb->blast_radius, true, true);
 
     free_bomb(head, collision, bomb);
 }
