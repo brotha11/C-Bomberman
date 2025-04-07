@@ -29,6 +29,8 @@ void bri_update(Brick** bricks, Fire** fires, Collision** collision, Power_up** 
             else {
                 spawn_power(powers, current->coll->x, current->coll->y);
                 free_brick(bricks, current, collision);
+                current = next_brick;
+                continue;
             }
         }
 

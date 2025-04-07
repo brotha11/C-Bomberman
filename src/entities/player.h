@@ -19,7 +19,7 @@
 #define DEATH_START DEATH_TIMER_MAX - 25
 #define DEATH_END DEATH_START - 30
 
-#define BOMB_COOLDOWN 10
+#define BOMB_COOLDOWN 15
 
 struct player {
 
@@ -39,6 +39,6 @@ typedef struct player Player;
 Player new_player(int x, int y, int width, int height, float max, int spr);
 void p_update(Player* player, Controller* controller, Collision** collision, Bomb** bombs, Fire** fires, Power_up** powers);
 void place_bomb(Player* player, Bomb** bombs, Collision** collision);
-void place_bomb_line(Player* player, Bomb** bombs, Collision** collision);
+void place_bomb_line(Player* player, Bomb** bombs, Collision** collision, Power_up** powers);
 
 #endif

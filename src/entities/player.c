@@ -42,6 +42,15 @@ void p_update(Player* player, Controller* controller, Collision** collision, Bom
             player->base.facing_x = 0;
         }
         
+        if (player->base.hspeed != 0 && player->base.vspeed != 0) {
+            if ((player->base.last_x - player->base.x) != 0 && (player->base.last_y - player->base.y) == 0) {
+                player->base.facing_y = 0;
+                player->base.facing_x = e_sign((player->base.x - player->base.last_x));
+            } else if ((player->base.last_x - player->base.x) == 0 && (player->base.last_y - player->base.y) != 0) {
+                player->base.facing_y = e_sign((player->base.y - player->base.last_y));
+                player->base.facing_x = 0;
+            }
+        }
 
         // Place bomb
 
@@ -56,7 +65,7 @@ void p_update(Player* player, Controller* controller, Collision** collision, Bom
                 && player->bomb_released && player->bomb_placed_timer < (int)BOMB_COOLDOWN/2) {
                 switch(player->bomb_action) {
                     case BOMB_LINE:
-                        place_bomb_line(player,bombs, collision);
+                        place_bomb_line(player,bombs, collision, powers);
                         break;
                     default:
                         break;
@@ -163,7 +172,7 @@ void place_bomb(Player* player, Bomb** bombs, Collision** collision) {
     }
 }
 
-void place_bomb_line(Player* player, Bomb** bombs, Collision** collision) {
+void place_bomb_line(Player* player, Bomb** bombs, Collision** collision, Power_up** powers) {
     int index = 1;  // Iniciamos el índice para colocar bombas
 
     // Recorremos las posiciones en la dirección en la que el jugador está mirando
@@ -182,7 +191,7 @@ void place_bomb_line(Player* player, Bomb** bombs, Collision** collision) {
         if (p_x % 16 >= 8) tile_x++;
 
         // Verificamos si la bomba colisionaría con otra bomba o pared
-        if (coll_meeting(collision, tile_x * 16 - 8, tile_y * 16, 16, 16)) {
+        if (coll_meeting(collision, tile_x * 16 - 8, tile_y * 16, 16, 16) || grab_powerup(powers, tile_x * 16 - 8, tile_y * 16, 16, 16)) {
             break;  // Detenemos la colocación de bombas si hay una colisión
         }
 

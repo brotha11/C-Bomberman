@@ -47,7 +47,7 @@ void pw_update(Power_up** head, Fire** fires) {
             current->grabable = 0;
             current->sprite.frame_x = 0;
             current->sprite.frame_y = 0;
-            current->sprite.y_off = -16;
+            current->sprite.y_off = -20;
             current->sprite.height = 32;
             current->sprite.frame_x_max = 8;
         }
