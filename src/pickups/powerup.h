@@ -3,10 +3,13 @@
 
 #include "../graphics/sprite.h"
 
+#define SIZE 4
+
 #define FIRE_UP 0
 #define BOMB_UP 1
 #define SPEED_UP 2
 #define BOMB_LINE 3
+#define KICK 4
 
 typedef struct power_up {
     int x;
@@ -27,6 +30,7 @@ typedef struct fire Fire;
 
 void add_powerup(Power_up** head, int x, int y, int power_type);
 Power_up* grab_powerup(Power_up** head, int x, int y, int width, int height);
+Power_up* coll_powerup(Power_up** head, int x, int y, int width, int height);
 void pw_update(Power_up** head, Fire** fires);
 void power_up_blow(Power_up** head, Power_up* power);
 

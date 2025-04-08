@@ -12,6 +12,7 @@ Player new_player(int x, int y, int w, int h, float max, int spr) {
     new.bombs_placed = 0;
     new.death_timer = DEATH_TIMER_MAX;
     new.bomb_action = 0;
+    new.kick_power = 1;
 
     new.base.sprite.frame_x_max = 4;
     new.base.sprite.x_off = -2;
@@ -75,6 +76,23 @@ void p_update(Player* player, Controller* controller, Collision** collision, Bom
 
         } else player->bomb_released = true;
 
+        // Bomb effects
+
+        if (player->kick_power == 1) {
+            Bomb* coll_x = (coll_bomb_ext(bombs,player->base.x + player->move_x, player->base.y,
+                    player->base.x, player->base.y, 16, 16));
+            Bomb* coll_y = (coll_bomb_ext(bombs,player->base.x, player->base.y + player->move_y,
+                    player->base.x, player->base.y, 16, 16));
+            
+            if (coll_x) {
+                if (abs(coll_x->y - player->base.y) <= 6 && coll_x->kick_x == 0)
+                    coll_x->kick_x = player->move_x;
+            }
+            if (coll_y) {
+                if (abs(coll_y->x - player->base.x) <= 6 && coll_y->kick_y == 0)
+                    coll_y->kick_y = player->move_y;
+            }
+        }
 
         // Grab Power Ups
         Power_up* grab = grab_powerup(powers, player->base.x, player->base.y, player->base.width, player->base.height);
@@ -92,6 +110,12 @@ void p_update(Player* player, Controller* controller, Collision** collision, Bom
                 break;
             case BOMB_LINE:
                 player->bomb_action = BOMB_LINE;
+                break;
+            case KICK:
+                player->kick_power = 1;
+                break;
+            default:
+                break;
             }
             free_powerup(powers, grab);
         }
@@ -103,9 +127,6 @@ void p_update(Player* player, Controller* controller, Collision** collision, Bom
                 player->death_timer = DEATH_TIMER_MAX;
             }
         }
-        // Get last x and y
-        player->base.last_x = player->base.x;
-        player->base.last_y = player->base.y;
     }
     // Reduce death timer
     else {
@@ -158,16 +179,12 @@ void p_update(Player* player, Controller* controller, Collision** collision, Bom
 }
 
 void place_bomb(Player* player, Bomb** bombs, Collision** collision) {
-    int p_x = player->base.x + player->base.width / 2;  // Centro del jugador en X
-    int p_y = player->base.y + player->base.height / 2; // Centro del jugador en Y
 
-    int tile_x = p_x / 16;  // Tile en el que está el centro del jugador (horizontal)
-    int tile_y = p_y / 16;  // Tile en el que está el centro del jugador (vertical)
+    int tile_x, tile_y;
+    get_tile_position(&tile_x, &tile_y, player->base.x, player->base.y, 16, 16);
 
-    if (p_x % 16 >= 8) tile_x++;
-
-    if (!coll_bomb(bombs, tile_x*16 - 8, tile_y * 16, 16, 16)) {
-        add_bomb(bombs, collision, &player->bombs_placed, tile_x * 16 - 8, tile_y * 16, player->blast_power);
+    if (!coll_bomb(bombs, tile_x, tile_y, 16, 16)) {
+        add_bomb(bombs, collision, &player->bombs_placed, tile_x, tile_y, player->blast_power);
         player->bomb_placed_timer = BOMB_COOLDOWN;
     }
 }
@@ -177,26 +194,16 @@ void place_bomb_line(Player* player, Bomb** bombs, Collision** collision, Power_
 
     // Recorremos las posiciones en la dirección en la que el jugador está mirando
     while (player->bombs_placed < player->bomb_amount) {
-        // Calculamos las posiciones X e Y de las bombas a colocar
-        // Si el jugador está mirando a la derecha o izquierda, solo se ajusta X
-        int p_x = player->base.x + (player->base.facing_x * index*16) + player->base.width / 2;
-        // Si el jugador está mirando arriba o abajo, solo se ajusta Y
-        int p_y = player->base.y + (player->base.facing_y * index*16) + player->base.height / 2;
-
-        // Calculamos la posición en términos de tiles
-        int tile_x = p_x / 16;  // Tile en el que está el centro de la bomba (horizontal)
-        int tile_y = p_y / 16;  // Tile en el que está el centro de la bomba (vertical)
-
-        // Ajustamos si el centro está cerca del borde de un tile
-        if (p_x % 16 >= 8) tile_x++;
-
+        int tile_x, tile_y;
+        get_tile_position(&tile_x, &tile_y, player->base.x + (player->base.facing_x * index*16),
+             player->base.y + player->base.facing_y * index*16, 16, 16);
         // Verificamos si la bomba colisionaría con otra bomba o pared
-        if (coll_meeting(collision, tile_x * 16 - 8, tile_y * 16, 16, 16) || grab_powerup(powers, tile_x * 16 - 8, tile_y * 16, 16, 16)) {
+        if (coll_meeting(collision, tile_x, tile_y, 16, 16) || grab_powerup(powers, tile_x, tile_y, 16, 16)) {
             break;  // Detenemos la colocación de bombas si hay una colisión
         }
 
         // Colocamos la bomba en la posición calculada
-        add_bomb(bombs, collision, &player->bombs_placed, tile_x * 16 - 8, tile_y * 16, player->blast_power);
+        add_bomb(bombs, collision, &player->bombs_placed, tile_x, tile_y, player->blast_power);
 
         // Aumentamos el índice para colocar la siguiente bomba más lejos
         ++index;

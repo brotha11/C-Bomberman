@@ -48,6 +48,8 @@ void e_update(Entity* entity, Collision** collision, Fire** fires) {
 }
 
 void e_move(Entity* entity, Collision** collision) {
+    entity->last_x = entity->x;
+    entity->last_y = entity->y;
 
     //float slide_factor = 2.75f;
     int divide = 24;
@@ -116,6 +118,62 @@ void e_move(Entity* entity, Collision** collision) {
         } else break;
     }
 
+}
+
+void e_move_all(Entity* entity, Collision** collision, Power_up** powers) {
+    entity->last_x = entity->x;
+    entity->last_y = entity->y;
+
+    entity->sub_x += entity->hspeed;
+    entity->final_x = round(entity->sub_x);
+    entity->sub_x -= entity->final_x;
+
+    int coll_x = 0;
+
+    if (entity->final_x == 0) entity->is_colliding_x = 0;
+
+    for (int i = 0; i < abs(entity->final_x); ++i) {
+        if(coll_meeting_ext(collision, entity->x + e_sign(entity->final_x), 
+        entity->y, entity->x, entity->y, entity->width, entity->height)) {
+            coll_x = 1;
+        }
+        if(coll_powerup(powers, entity->x + e_sign(entity->final_x), 
+        entity->y, entity->width, entity->height)) {
+            coll_x = 1;
+        }
+
+        if (coll_x == 0) {
+            entity->x += e_sign(entity->hspeed);     
+            entity->is_colliding_x = 0;
+        } else {
+            break;
+        }
+    }
+    
+    entity->sub_y += entity->vspeed;
+    entity->final_y = round(entity->sub_y);
+    entity->sub_y -= entity->final_y;
+
+    int coll_y = 0;
+
+    if (entity->final_y == 0) entity->is_colliding_y = 0;
+
+    for (int i = 0; i < abs(entity->final_y); ++i) {
+
+        if (coll_meeting_ext(collision, entity->x, entity->y + e_sign(entity->final_y), 
+            entity->x, entity->y, entity->width, entity->height)) {
+                coll_y = 1;
+            }
+        if (coll_powerup(powers, entity->x, entity->y + e_sign(entity->final_y), 
+            entity->width, entity->height)) {
+                coll_y = 1;
+            }
+
+        if (coll_y == 0) {
+            entity->y += e_sign(entity->vspeed);
+            entity->is_colliding_y = 0;
+        } else break;
+    }
 }
 
 int e_sign(int x) {

@@ -9,11 +9,11 @@ void add_powerup(Power_up** head, int x, int y, int power_type) {
         return;
     }
 
-    new->x = x+4;
-    new->y = y+4;
+    new->x = x;
+    new->y = y;
 
-    new->height = 12;
-    new->width = 12;
+    new->height = 16;
+    new->width = 16;
 
     new->grabable = 1;
     new->timer = (int)EXPLOSION_TIME;
@@ -23,8 +23,8 @@ void add_powerup(Power_up** head, int x, int y, int power_type) {
     new->sprite = new_sprite(16,16);
     new->sprite.frame_x_max = 4;
     new->sprite.image_speed = 10;
-    new->sprite.x_off = -4;
-    new->sprite.y_off = -4;
+    new->sprite.x_off = 0;
+    new->sprite.y_off = 0;
 
     new->sprite.frame_y = power_type;
 
@@ -72,6 +72,27 @@ void pw_update(Power_up** head, Fire** fires) {
 }
 
 Power_up* grab_powerup(Power_up** head, int x, int y, int width, int height) {
+    if (*head == NULL) {
+        return NULL;
+    }
+
+    Power_up* current = *head;
+    
+    // Recorremos todos los bloques de colisión
+    while (current != NULL) {
+
+        // Verificamos si hay colisión entre la hitbox del personaje y el bloque
+        if (x + width > current->x+SIZE && x < current->x+SIZE + current->width-SIZE &&  // Revisa si el personaje está dentro del ancho del bloque
+            y + height > current->y+SIZE && y < current->y+SIZE + current->height-SIZE) {  // Revisa si el personaje está dentro de la altura del bloque
+            return current;  // Hay colisión
+        }
+
+        current = current->next;
+    }
+    return NULL;  // No hay colisión
+}
+
+Power_up* coll_powerup(Power_up** head, int x, int y, int width, int height) {
     if (*head == NULL) {
         return NULL;
     }

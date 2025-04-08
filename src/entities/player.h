@@ -28,6 +28,7 @@ struct player {
     int blast_power;
     int bomb_amount, bombs_placed;
     int bomb_action;
+    int kick_power;
 
     int death_timer;
 

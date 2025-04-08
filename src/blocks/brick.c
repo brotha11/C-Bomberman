@@ -74,6 +74,11 @@ void spawn_power(Power_up** powers, int x, int y) {
         add_powerup(powers,x,y,BOMB_LINE);
         return;
     }
+    srand(seed* 5);
+    if (rand()%100 <= 4) {
+        add_powerup(powers,x,y,KICK);
+        return;
+    }
 }
 
 void free_all_bricks(Brick** head, Collision** head_coll) {
