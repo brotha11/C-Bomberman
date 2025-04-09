@@ -12,13 +12,12 @@ Player new_player(int x, int y, int w, int h, float max, int spr) {
     new.bombs_placed = 0;
     new.death_timer = DEATH_TIMER_MAX;
     new.bomb_action = 0;
-    new.kick_power = 1;
+    new.kick_power = 0;
 
     new.base.sprite.frame_x_max = 4;
     new.base.sprite.x_off = -2;
 
     return new;
-
 }
 
 void p_update(Player* player, Controller* controller, Collision** collision, Bomb** bombs, Fire** fires, Power_up** powers) {

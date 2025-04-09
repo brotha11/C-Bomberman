@@ -1,6 +1,6 @@
 #include "controller.h"
 
-Controller new_controller() {
+Controller new_controller(Uint8 up, Uint8 down, Uint8 left, Uint8 right, Uint8 bomb) {
     Controller new;
 
     new.key_up = false;
@@ -10,15 +10,22 @@ Controller new_controller() {
 
     new.key_bomb = false;
 
+    new.up = up;
+    new.down = down;
+    new.rigth = right;
+    new.left = left;
+
+    new.bomb = bomb;
+
     return new;
 }
 
 void check_inputs(Controller* controller) {
     const Uint8* state = SDL_GetKeyboardState(NULL);
 
-    controller->key_up = state[SDL_SCANCODE_W];
-    controller->key_down = state[SDL_SCANCODE_S];
-    controller->key_left = state[SDL_SCANCODE_A];
-    controller->key_right = state[SDL_SCANCODE_D];
-    controller->key_bomb = state[SDL_SCANCODE_RSHIFT];
+    controller->key_up = state[controller->up];
+    controller->key_down = state[controller->down];
+    controller->key_left = state[controller->left];
+    controller->key_right = state[controller->rigth];
+    controller->key_bomb = state[controller->bomb];
 }

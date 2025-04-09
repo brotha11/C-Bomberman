@@ -24,6 +24,7 @@
 struct player {
 
     Entity base;
+    Controller input;
     int move_x, move_y;
     int blast_power;
     int bomb_amount, bombs_placed;

@@ -70,30 +70,10 @@ bool graphics_event(Graphics* graphics) {
     return true;
 }
 
-void render_game(Graphics* graphics, Entity* entity, Collision* collision, 
-        Bomb** bombs, Fire** fires, Brick** bricks, Player* player, Power_up** powers) {
-    
-    SDL_RenderClear(graphics->renderer);
-
-    // Map
-    tex_render(graphics, &graphics->background, MAP_01, 0,0);
-
-    f_render(graphics, fires);
-    //coll_render(graphics, collision);
-    bri_render(graphics, bricks);
-    b_render(graphics, bombs);
-    pw_render(graphics, powers);
-    //e_render(graphics, entity);
-
-    /*tex_render(graphics, BOMBER_WHITE, player->base.x, player->base.y, 
-            player->base.sprite.frame_rect.w, player->base.sprite.frame_rect.h);*/
-    tex_render(graphics, &player->base.sprite, BOMBER_WHITE, player->base.x, player->base.y);
-
-
-    SDL_RenderPresent(graphics->renderer);
-}
-
 void tex_render(Graphics* graphics, Sprite* sprite, int spr, int x, int y) {
+
+    if (!sprite) return;
+
     rect_set(graphics, &sprite->frame_rect, 
             sprite->frame_x*graphics->sprites[spr].spr_width, 
                     sprite->frame_y*graphics->sprites[spr].spr_height, 

@@ -18,8 +18,8 @@ struct game
 {
     bool game_running;
     Graphics graphics;
-    Controller controller;
     Player player;
+    Player player2;
 
     Bomb* bombs;
     Fire* fires;

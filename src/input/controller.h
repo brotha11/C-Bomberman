@@ -13,10 +13,12 @@ struct controller {
 
     bool key_bomb;
 
+    Uint8 up, down, rigth, left, bomb;
+
 };
 typedef struct controller Controller;
 
-Controller new_controller();
+Controller new_controller(Uint8 up, Uint8 down, Uint8 left, Uint8 right, Uint8 bomb);
 void check_inputs(Controller* controller);
 
 #endif

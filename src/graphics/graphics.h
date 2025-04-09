@@ -46,9 +46,6 @@ struct graphics {
 typedef struct graphics Graphics;
 
 void init_graphics(Graphics* graphics);
-void render_game(Graphics* graphics, Entity* entity, Collision* collision, 
-        Bomb** bombs, Fire** fires, Brick** bricks, Player* player , Power_up** powers);
-
 bool graphics_event(Graphics* graphics);
 
 // Object draw

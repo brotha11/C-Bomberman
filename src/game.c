@@ -12,14 +12,16 @@ void init_game(Game* game) {
     game->power_ups = NULL;
 
     start_room(game);
-    game->controller = new_controller();
-
 }
 
 void update(Game* game) {
 
-    check_inputs(&game->controller);
-    p_update(&game->player, &game->controller, &game->collision, &game->bombs, &game->fires, &game->power_ups);
+    check_inputs(&game->player.input);
+    p_update(&game->player, &game->player.input, &game->collision, &game->bombs, &game->fires, &game->power_ups);
+
+    check_inputs(&game->player2.input);
+    p_update(&game->player2, &game->player2.input, &game->collision, &game->bombs, &game->fires, &game->power_ups);
+
     b_update(&game->bombs, &game->fires, &game->collision, &game->power_ups);
     f_update(&game->fires, &game->bombs);
     bri_update(&game->bricks, &game->fires, &game->collision, &game->power_ups);
@@ -53,7 +55,7 @@ void start_room(Game* game) {
 
     for (int i = 0; i < 11; ++i) {
         for(int j = 0; j < 13; ++j){
-            if(i == 0 && j == 0 || i == 0 && j == 1 || i == 1 && j == 0 ||
+            if(i == 0 && j == 0 || i == 0 && j == 1 || i == 1 && j == 0 || i == 10 && j == 12 || i == 9 && j == 12 || i == 10 && j == 11 ||
                 coll_meeting(&game->collision, (s_x-16) + j*16, (s_y-16) + i*16, 16, 16)) continue;
 
             if (rand()%100 < 65)
@@ -62,12 +64,30 @@ void start_room(Game* game) {
     }
 
     game->player = new_player(s_x-16,s_y-16,16,16,1,BOMBER_WHITE);
+    game->player.input = new_controller(SDL_SCANCODE_W, SDL_SCANCODE_S,
+        SDL_SCANCODE_A, SDL_SCANCODE_D, SDL_SCANCODE_G);
+
+    game->player2 = new_player(s_x-16 + (16*13),s_y-16, + (16*11),16,1,BOMBER_WHITE);
+    game->player2.input = new_controller(SDL_SCANCODE_UP, SDL_SCANCODE_DOWN,
+        SDL_SCANCODE_LEFT, SDL_SCANCODE_RIGHT, SDL_SCANCODE_RSHIFT);
 }
 
 void render(Game* game) {
+    SDL_RenderClear(game->graphics.renderer);
 
-    render_game(&game->graphics, &game->player.base, game->collision, 
-        &game->bombs, &game->fires, &game->bricks, &game->player, &game->power_ups);
+    // Map
+    tex_render(&game->graphics, &game->graphics.background, MAP_01, 0,0);
+
+    f_render(&game->graphics, &game->fires);
+    bri_render(&game->graphics, &game->bricks);
+    b_render(&game->graphics, &game->bombs);
+    pw_render(&game->graphics, &game->power_ups);
+
+    tex_render(&game->graphics, &game->player.base.sprite, BOMBER_WHITE, game->player.base.x, game->player.base.y);
+    tex_render(&game->graphics, &game->player2.base.sprite, BOMBER_WHITE, game->player2.base.x, game->player2.base.y);
+
+
+    SDL_RenderPresent(game->graphics.renderer);
 }
 
 void run_game(Game* game) {
