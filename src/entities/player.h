@@ -5,6 +5,7 @@
 #include "../input/controller.h"
 #include "../bombs/bomb.h"
 #include "../pickups/powerup.h"
+#include "time.h"
 
 #define P_DOWN 0
 #define P_UP 1

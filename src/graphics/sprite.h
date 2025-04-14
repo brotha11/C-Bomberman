@@ -2,28 +2,26 @@
 #define SPRITE_H
 
 // LIST OF TEXTURES
-#define BOMBER_WHITE 0
+
+typedef enum {
+    TEX_BOMBER_WHITE,
+    TEX_BOMB,
+    TEX_FIRE,
+    TEX_MAP_01,
+    TEX_BRICK,
+    TEX_POWER_UPS,
+    TEX_ITEM_BURN,
+    TEX_AMOUNT
+} TEXTURES;
+
 #define BOMBER_WHITE_PATH "res/bomberman_w.png"
-
-#define BOMB 1
 #define BOMB_PATH "res/bomb.png"
-
-#define FIRE 2
 #define FIRE_PATH "res/fire.png"
-
-#define MAP_01 3
 #define MAP_01_PATH "res/map_01.png"
-
-#define BRICK_01 4
 #define BRICK_01_PATH "res/brick_01.png"
-
-#define POWER_UPS 5
 #define POWER_UPS_PATH "res/power_ups.png"
-
-#define ITEM_BURN 6
 #define ITEM_BURN_PATH "res/item_burn.png"
 
-#define TEXTURE_AMOUNT 7
 #define SPR 0
 #define SPR_WIDTH 1
 #define SPR_HEIGHT 2

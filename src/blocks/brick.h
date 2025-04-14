@@ -16,6 +16,7 @@ struct brick {
     bool visible;
     
     int timer;
+    int dummy;
 
     struct brick* next;
 };

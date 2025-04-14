@@ -41,6 +41,11 @@ void pw_update(Power_up** head, Fire** fires) {
     while(current != NULL) {
         next = current->next;
 
+        if (current->x == -1234) {
+            current = next;
+            continue;
+        }
+
         Fire* fire = coll_fire(fires, current->x, current->y, current->width, current->height);
 
         if (fire && (fire->visible || !fire->visible && fire->timer > EXPLOSION_TIME/4) && current->grabable == 1) {
@@ -56,6 +61,8 @@ void pw_update(Power_up** head, Fire** fires) {
             if (current->timer != 0) current->timer--;
             else {
                 free_powerup(head, current);
+                current = next;
+                continue;
             }
             if (current->timer == 1) {
                 current->visible = false;
@@ -81,6 +88,11 @@ Power_up* grab_powerup(Power_up** head, int x, int y, int width, int height) {
     // Recorremos todos los bloques de colisión
     while (current != NULL) {
 
+        if (current->x == -1234) {
+            current = current->next;
+            continue;
+        }
+
         // Verificamos si hay colisión entre la hitbox del personaje y el bloque
         if (x + width > current->x+SIZE && x < current->x+SIZE + current->width-SIZE &&  // Revisa si el personaje está dentro del ancho del bloque
             y + height > current->y+SIZE && y < current->y+SIZE + current->height-SIZE) {  // Revisa si el personaje está dentro de la altura del bloque
@@ -101,6 +113,11 @@ Power_up* coll_powerup(Power_up** head, int x, int y, int width, int height) {
     
     // Recorremos todos los bloques de colisión
     while (current != NULL) {
+
+        if (current->x == -1234) {
+            current = current->next;
+            continue;
+        }
 
         // Verificamos si hay colisión entre la hitbox del personaje y el bloque
         if (x + width > current->x && x < current->x + current->width &&  // Revisa si el personaje está dentro del ancho del bloque

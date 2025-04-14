@@ -1,9 +1,12 @@
 #ifndef GAME_H
 #define GAME_h
 
+#define DUMMY -1234
+
 #include "stdbool.h"
 #include "stdio.h"
 #include "graphics/graphics.h"
+#include "audio/sound.h"
 #include "entities/entity.h"
 #include "entities/player.h"
 #include "input/controller.h"
@@ -19,7 +22,6 @@ struct game
     bool game_running;
     Graphics graphics;
     Player player;
-    Player player2;
 
     Bomb* bombs;
     Fire* fires;

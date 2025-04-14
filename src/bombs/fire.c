@@ -106,15 +106,15 @@ void f_update(Fire** fires, Bomb** bombs) {
     while(current != NULL) {
         next_f = current->next;
 
+        if (current->x == -1234) {
+            current = next_f;
+            continue;
+        }
+
         //Blow up bombs
         Bomb* blow = coll_bomb(bombs,current->x,current->y,current->width, current->height);
         if (blow) {
             if (blow->timer > 5) blow->timer = 5;
-        }
-
-        if (current->timer != 0) current->timer--;
-        else {
-            free_fire(fires,current);
         }
 
         if (current->timer == 1) {
@@ -134,6 +134,12 @@ void f_update(Fire** fires, Bomb** bombs) {
         }
         animate_sprite_timer(&current->sprite, current->timer, EXPLOSION_TIME);
 
+        if (current->timer != 0) current->timer--;
+        else {
+            free_fire(fires,current);
+            current = next_f;
+        }
+
         current = next_f;
     }
 }
@@ -143,6 +149,11 @@ Fire* coll_fire(Fire** head, int x, int y, int width, int height) {
     
     // Recorremos todos los bloques de colisión
     while (current != NULL) {
+
+        if (current->x == -1234) {
+            current = current->next;
+            continue;  
+        }
 
         // Verificamos si hay colisión entre la hitbox del personaje y el bloque
         if (x + width > current->x && x < current->x + current->width &&  // Revisa si el personaje está dentro del ancho del bloque
@@ -161,6 +172,11 @@ Fire* coll_fire_exclude(Fire** head, Fire* ignore, int x, int y, int width, int 
     
     // Recorremos todos los bloques de colisión
     while (current != NULL) {
+
+        if (current->x == -1234) {
+            current = current->next;
+            continue;  
+        }
 
         if (current == ignore) {
             current = current->next;

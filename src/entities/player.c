@@ -84,12 +84,16 @@ void p_update(Player* player, Controller* controller, Collision** collision, Bom
                     player->base.x, player->base.y, 16, 16));
             
             if (coll_x) {
-                if (abs(coll_x->y - player->base.y) <= 6 && coll_x->kick_x == 0)
+                if (abs(coll_x->y - player->base.y) <= 6 && coll_x->kick_x == 0) {
+                    //play_sound(SFX_KICK);
                     coll_x->kick_x = player->move_x;
+                }
             }
             if (coll_y) {
-                if (abs(coll_y->x - player->base.x) <= 6 && coll_y->kick_y == 0)
+                if (abs(coll_y->x - player->base.x) <= 6 && coll_y->kick_y == 0) {
+                    //play_sound(SFX_KICK);
                     coll_y->kick_y = player->move_y;
+                }
             }
         }
 
@@ -116,12 +120,16 @@ void p_update(Player* player, Controller* controller, Collision** collision, Bom
             default:
                 break;
             }
+            play_sound(SFX_POWER_UP);
             free_powerup(powers, grab);
         }
 
         //get killed
         if (coll_fire(fires,player->base.x,player->base.y,player->base.width, player->base.height)) {
             if (player->base.alive) {
+
+                play_sound(SFX_DEATH);
+
                 player->base.alive = false;
                 player->death_timer = DEATH_TIMER_MAX;
             }
@@ -168,9 +176,21 @@ void p_update(Player* player, Controller* controller, Collision** collision, Bom
             player->base.sprite.frame_x = 0;
             player->base.sprite. image_speed = 0;
         } else {
+            // Play death cry
+            if (player->death_timer == DEATH_START) {
+                unsigned seed = (clock() + player->base.x * player->base.y);
+
+                switch(seed % DEATH_VC) {
+                    case 0: play_sound(SFX_DEATH_VC0); break;
+                    case 1: play_sound(SFX_DEATH_VC1); break;
+                    case 2: play_sound(SFX_DEATH_VC2); break;
+                    default: play_sound(SFX_KICK); break;
+                }
+            }
+
             if (player->base.sprite.image_speed != -1) {
                 player->base.sprite.frame_x_max = 8;
-                player->base.sprite.image_speed = 4;
+                player->base.sprite.image_speed = 3;
             }
         }
     }

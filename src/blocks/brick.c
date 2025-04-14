@@ -12,6 +12,7 @@ void add_brick(Brick** bricks, Collision** head, int x, int y, int width, int he
     new_brick->sprite = new_sprite(16,16);
     new_brick->sprite.frame_x_max = MAX_BRICK_FRAMES;
     new_brick->visible = true;
+    new_brick->dummy = x;
 
     *bricks = new_brick;
 }
@@ -24,6 +25,21 @@ void bri_update(Brick** bricks, Fire** fires, Collision** collision, Power_up** 
 
         next_brick = current->next;
 
+        if (current->dummy == -1234) {
+            current = next_brick;
+            continue;  
+        }
+
+        if (coll_fire(fires,current->coll->x,current->coll->y,current->coll->width, current->coll->height)) {
+            current->broken = true;
+        }
+
+        // Animate
+        if (current->broken) {
+            if (current->sprite.frame_x < MAX_BRICK_FRAMES) animate_sprite_timer(&current->sprite, current->timer, EXPLOSION_TIME);
+            if (current->timer == 1) current->visible = false;
+        }
+
         if (current->broken) {
             if (current->timer != 0) current->timer--;
             else {
@@ -32,17 +48,6 @@ void bri_update(Brick** bricks, Fire** fires, Collision** collision, Power_up** 
                 current = next_brick;
                 continue;
             }
-        }
-
-        if (coll_fire(fires,current->coll->x,current->coll->y,current->coll->width, current->coll->height)) {
-            current->broken = true;
-        }
-
-        // Animate
-
-        if (current->broken) {
-            if (current->sprite.frame_x < MAX_BRICK_FRAMES) animate_sprite_timer(&current->sprite, current->timer, EXPLOSION_TIME);
-            if (current->timer == 1) current->visible = false;
         }
 
         current = next_brick;

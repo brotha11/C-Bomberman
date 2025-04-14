@@ -6,6 +6,7 @@
 #include "../bombs/fire.h"
 #include "stdio.h"
 #include "../graphics/sprite.h"
+#include "../audio/sound.h"
 
 struct entity {
     int x,y;

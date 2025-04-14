@@ -4,6 +4,7 @@ void init_game(Game* game) {
 
     game->game_running = true;
     init_graphics(&game->graphics);
+    sound_init();
 
     game->collision = NULL;
     game->bombs = NULL;
@@ -18,9 +19,6 @@ void update(Game* game) {
 
     check_inputs(&game->player.input);
     p_update(&game->player, &game->player.input, &game->collision, &game->bombs, &game->fires, &game->power_ups);
-
-    check_inputs(&game->player2.input);
-    p_update(&game->player2, &game->player2.input, &game->collision, &game->bombs, &game->fires, &game->power_ups);
 
     b_update(&game->bombs, &game->fires, &game->collision, &game->power_ups);
     f_update(&game->fires, &game->bombs);
@@ -63,28 +61,23 @@ void start_room(Game* game) {
         }
     }
 
-    game->player = new_player(s_x-16,s_y-16,16,16,1,BOMBER_WHITE);
+    game->player = new_player(s_x-16,s_y-16,16,16,1,TEX_BOMBER_WHITE);
     game->player.input = new_controller(SDL_SCANCODE_W, SDL_SCANCODE_S,
-        SDL_SCANCODE_A, SDL_SCANCODE_D, SDL_SCANCODE_G);
-
-    game->player2 = new_player(s_x-16 + (16*13),s_y-16, + (16*11),16,1,BOMBER_WHITE);
-    game->player2.input = new_controller(SDL_SCANCODE_UP, SDL_SCANCODE_DOWN,
-        SDL_SCANCODE_LEFT, SDL_SCANCODE_RIGHT, SDL_SCANCODE_RSHIFT);
+        SDL_SCANCODE_A, SDL_SCANCODE_D, SDL_SCANCODE_RSHIFT);
 }
 
 void render(Game* game) {
     SDL_RenderClear(game->graphics.renderer);
 
     // Map
-    tex_render(&game->graphics, &game->graphics.background, MAP_01, 0,0);
+    tex_render(&game->graphics, &game->graphics.background, TEX_MAP_01, 0,0);
 
     f_render(&game->graphics, &game->fires);
     bri_render(&game->graphics, &game->bricks);
     b_render(&game->graphics, &game->bombs);
     pw_render(&game->graphics, &game->power_ups);
 
-    tex_render(&game->graphics, &game->player.base.sprite, BOMBER_WHITE, game->player.base.x, game->player.base.y);
-    tex_render(&game->graphics, &game->player2.base.sprite, BOMBER_WHITE, game->player2.base.x, game->player2.base.y);
+    tex_render(&game->graphics, &game->player.base.sprite, TEX_BOMBER_WHITE, game->player.base.x, game->player.base.y);
 
 
     SDL_RenderPresent(game->graphics.renderer);
@@ -112,4 +105,5 @@ void free_room(Game* game) {
 void free_game(Game* game) {
     free_graphics(&game->graphics);
     free_room(game);
+    sound_exit();
 }

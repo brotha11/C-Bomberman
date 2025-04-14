@@ -6,6 +6,7 @@
 #include "../graphics/sprite.h"
 #include "../pickups/powerup.h"
 #include "../entities/entity.h"
+#include "../audio/sound.h"
 
 #define BOMB_KICK_SPEED 1.75
 #define BOMB_TIMER 180

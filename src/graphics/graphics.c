@@ -16,40 +16,40 @@ void init_graphics(Graphics* graphics) {
     graphics->rect.h = 0;
 
     // Load textures
-    graphics->sprites = (Sprite_data*)malloc(TEXTURE_AMOUNT * sizeof(Sprite_data));
+    graphics->sprites = (Sprite_data*)malloc(TEX_AMOUNT * sizeof(Sprite_data));
 
     // White bomber
-    graphics->sprites[BOMBER_WHITE].sprite = load_sprite(BOMBER_WHITE_PATH, graphics->renderer);
-    graphics->sprites[BOMBER_WHITE].spr_width = 20;
-    graphics->sprites[BOMBER_WHITE].spr_height = 24;
+    graphics->sprites[TEX_BOMBER_WHITE].sprite = load_sprite(BOMBER_WHITE_PATH, graphics->renderer);
+    graphics->sprites[TEX_BOMBER_WHITE].spr_width = 20;
+    graphics->sprites[TEX_BOMBER_WHITE].spr_height = 24;
 
     // Bombs
-    graphics->sprites[BOMB].sprite = load_sprite(BOMB_PATH, graphics->renderer);
-    graphics->sprites[BOMB].spr_width = 16;
-    graphics->sprites[BOMB].spr_height = 16;
+    graphics->sprites[TEX_BOMB].sprite = load_sprite(BOMB_PATH, graphics->renderer);
+    graphics->sprites[TEX_BOMB].spr_width = 16;
+    graphics->sprites[TEX_BOMB].spr_height = 16;
 
     // Fire exp
-    graphics->sprites[FIRE].sprite = load_sprite(FIRE_PATH, graphics->renderer);
-    graphics->sprites[FIRE].spr_width = 16;
-    graphics->sprites[FIRE].spr_height = 16;
+    graphics->sprites[TEX_FIRE].sprite = load_sprite(FIRE_PATH, graphics->renderer);
+    graphics->sprites[TEX_FIRE].spr_width = 16;
+    graphics->sprites[TEX_FIRE].spr_height = 16;
 
     // Map 01
-    graphics->sprites[MAP_01].sprite = load_sprite(MAP_01_PATH, graphics->renderer);
-    graphics->sprites[MAP_01].spr_width = 256;
-    graphics->sprites[MAP_01].spr_height = 224;
+    graphics->sprites[TEX_MAP_01].sprite = load_sprite(MAP_01_PATH, graphics->renderer);
+    graphics->sprites[TEX_MAP_01].spr_width = 256;
+    graphics->sprites[TEX_MAP_01].spr_height = 224;
 
-    graphics->sprites[BRICK_01].sprite = load_sprite(BRICK_01_PATH, graphics->renderer);
-    graphics->sprites[BRICK_01].spr_width = 16;
-    graphics->sprites[BRICK_01].spr_height = 16;
+    graphics->sprites[TEX_BRICK].sprite = load_sprite(BRICK_01_PATH, graphics->renderer);
+    graphics->sprites[TEX_BRICK].spr_width = 16;
+    graphics->sprites[TEX_BRICK].spr_height = 16;
 
-    graphics->sprites[POWER_UPS].sprite = load_sprite(POWER_UPS_PATH, graphics->renderer);
-    graphics->sprites[POWER_UPS].spr_width = 16;
-    graphics->sprites[POWER_UPS].spr_height = 16;
+    graphics->sprites[TEX_POWER_UPS].sprite = load_sprite(POWER_UPS_PATH, graphics->renderer);
+    graphics->sprites[TEX_POWER_UPS].spr_width = 16;
+    graphics->sprites[TEX_POWER_UPS].spr_height = 16;
 
 
-    graphics->sprites[ITEM_BURN].sprite = load_sprite(ITEM_BURN_PATH, graphics->renderer);
-    graphics->sprites[ITEM_BURN].spr_width = 16;
-    graphics->sprites[ITEM_BURN].spr_height = 32;
+    graphics->sprites[TEX_ITEM_BURN].sprite = load_sprite(ITEM_BURN_PATH, graphics->renderer);
+    graphics->sprites[TEX_ITEM_BURN].spr_width = 16;
+    graphics->sprites[TEX_ITEM_BURN].spr_height = 32;
 
     graphics->background = new_sprite(256,224);
 }
@@ -99,7 +99,7 @@ void b_render(Graphics* graphics, Bomb** bombs) {
     
     // Recorremos todos los bloques de colisión
     while (current != NULL) {
-        tex_render(graphics, &current->sprite, BOMB, current->x, current->y);
+        tex_render(graphics, &current->sprite, TEX_BOMB, current->x, current->y);
         current = current->next;
     }
 }
@@ -113,7 +113,7 @@ void f_render(Graphics* graphics, Fire** fires) {
     while (current != NULL) {
 
         if (current->visible) {
-            tex_render(graphics, &current->sprite, FIRE, current->x, current->y);
+            tex_render(graphics, &current->sprite, TEX_FIRE, current->x, current->y);
         }
         current = current->next;
     }
@@ -132,7 +132,7 @@ void bri_render(Graphics* graphics, Brick** bricks) {
             continue;
         }
 
-        tex_render(graphics, &current->sprite, BRICK_01, current->coll->x, current->coll->y);
+        tex_render(graphics, &current->sprite, TEX_BRICK, current->coll->x, current->coll->y);
 
         current = current->next;
     }
@@ -146,9 +146,9 @@ void pw_render(Graphics* graphics, Power_up** powers) {
 
         if (current->visible) {
             if (current->grabable == 1) {
-                tex_render(graphics, &current->sprite, POWER_UPS, current->x, current->y);
+                tex_render(graphics, &current->sprite, TEX_POWER_UPS, current->x, current->y);
             } else {
-                tex_render(graphics, &current->sprite, ITEM_BURN, current->x, current->y);
+                tex_render(graphics, &current->sprite, TEX_ITEM_BURN, current->x, current->y);
             }
         }
 
@@ -197,7 +197,7 @@ void free_graphics(Graphics* graphics) {
     SDL_DestroyWindow(graphics->window);
     SDL_DestroyRenderer(graphics->renderer);
 
-    for(int i = 0; i<TEXTURE_AMOUNT; ++i) {
+    for(int i = 0; i < TEX_AMOUNT; ++i) {
         SDL_DestroyTexture(graphics->sprites[i].sprite);
     }
     free(graphics->sprites);

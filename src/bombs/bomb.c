@@ -6,7 +6,7 @@ void add_bomb(Bomb** head, Collision** colls, int* owner_bomb, int col, int row,
     
     add_collision(colls, col, row, 16, 16);
 
-    new_bomb->move = new_entity(col,row,16,16,BOMB_KICK_SPEED,BOMB);
+    new_bomb->move = new_entity(col,row,16,16,BOMB_KICK_SPEED, TEX_BOMB);
 
     new_bomb->coll = *colls; // Apunta a la colisión recién creada
     new_bomb->x = col;
@@ -25,6 +25,9 @@ void add_bomb(Bomb** head, Collision** colls, int* owner_bomb, int col, int row,
     new_bomb->sprite.image_speed = 14;
     new_bomb->sprite.frame_x_max = 4;
 
+    // Play sound for placing bomb
+    play_sound(SFX_PLACE_BOMB);
+
     new_bomb->next = *head;
     *head = new_bomb;
 }
@@ -37,16 +40,20 @@ void b_update(Bomb** head, Fire** fires, Collision** collision, Power_up** power
 
         next_bomb = current->next;
 
-        if(current->timer != 0) current->timer--;
-        else {
-            b_explode(head, current, fires, collision, powers);
+        if (current->x == -1234) {
+            current = next_bomb;
+            continue;  
         }
 
         // Kicked
+        if (current->move.hspeed + current->move.vspeed == 0 && current->kick_x + current->kick_y != 0) {
+            play_sound(SFX_KICK);
+        }
+
         current->move.hspeed = BOMB_KICK_SPEED * current->kick_x;
         current->move.vspeed = BOMB_KICK_SPEED * current->kick_y;
 
-        if (current->kick_x !=0 || current->kick_y != 0) {
+        if (current->kick_x != 0 || current->kick_y != 0) {
             e_move_all(&current->move, collision, powers);
 
             current->x = current->move.x;
@@ -86,6 +93,12 @@ void b_update(Bomb** head, Fire** fires, Collision** collision, Power_up** power
         // Animation
         animate_sprite(&current->sprite);
 
+        if(current->timer != 0) current->timer--;
+        else {
+            b_explode(head, current, fires, collision, powers);
+            current = next_bomb;
+        }
+
         current = next_bomb;
     }
 }
@@ -103,6 +116,8 @@ void b_explode(Bomb** head, Bomb* bomb, Fire** fires, Collision** collision, Pow
     add_fire(fires, head, collision, powers, bomb->x, bomb->y, LEFT, bomb->blast_radius, true, true);
     add_fire(fires, head, collision, powers, bomb->x, bomb->y, RIGHT, bomb->blast_radius, true, true);
 
+    play_sound(SFX_BLOW_UP_R);
+
     free_bomb(head, collision, bomb);
 }
 
@@ -111,6 +126,11 @@ Bomb* coll_bomb(Bomb** head, int x, int y, int width, int height) {
     
     // Recorremos todos los bloques de colisión
     while (current != NULL) {
+
+        if (current->x == -1234) {
+            current = current->next;
+            continue;  
+        }
 
         // Verificamos si hay colisión entre la hitbox del personaje y el bloque
         if (x + width > current->x && x < current->x + current->width &&  // Revisa si el personaje está dentro del ancho del bloque
@@ -128,6 +148,11 @@ Bomb* coll_bomb_ext(Bomb** head, int x, int y, int true_x, int true_y, int width
     
     // Recorremos todos los bloques de colisión
     while (current != NULL) {
+
+        if (current->x == -1234) {
+            current = current->next;
+            continue;  
+        }
 
         if (true_x + width > current->x && true_x < current->x + current->width &&  // Revisa si el personaje está dentro del ancho del bloque
             true_y + height > current->y && true_y < current->y + current->height) {
@@ -164,9 +189,10 @@ void free_bomb(Bomb** head, Collision** head_coll, Bomb* bomb) {
   
     if (temp != NULL && temp == bomb) { 
         *head = temp->next; // Changed head 
+
+        if (temp->x != -1234) (*temp->owner)--;
         free_single(head_coll, temp->coll);
         free(temp); // free old head 
-        (*temp->owner)--;
 
         return; 
     } 
@@ -185,7 +211,7 @@ void free_bomb(Bomb** head, Collision** head_coll, Bomb* bomb) {
     // Unlink the node from linked list 
     prev->next = temp->next; 
   
-    (*temp->owner)--;
+    if (temp->x != -1234) (*temp->owner)--;
     free_single(head_coll, temp->coll);
     free(temp); // Free memory 
 }

@@ -1,5 +1,5 @@
 # Variables comunes
-SRC = src/*.c src/blocks/*.c src/entities/*.c src/bombs/*.c src/graphics/*.c src/input/*.c src/pickups/*.c
+SRC = src/*.c src/blocks/*.c src/entities/*.c src/bombs/*.c src/graphics/*.c src/input/*.c src/pickups/*.c src/audio/*.c
 LIBS = -lSDL2main -lSDL2 -lSDL2_image -lSDL2_mixer
 CC = gcc
 CFLAGS = -Iinclude -Llib
