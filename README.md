@@ -48,3 +48,7 @@ This project is purely for educational and personal purposes, and **is not meant
 - **The Sprites Resource (Rippers):**
   - Gors
   - T_M
+
+- **The Sounds Resource (Rippers):**
+  - SteamyJ
+  - Phongpon
