@@ -4,7 +4,21 @@
 #include "stdbool.h"
 #include "SDL2/SDL.h"
 
+#include "../game/game_constants.h"
+
+#define DEADZONE 16000
+
+typedef struct profile {
+    Uint8 up, down, right, left, bomb;
+} Profile;
+
 struct controller {
+    SDL_GameController* gamepad;
+    SDL_JoystickID gamepad_id;
+    int id;
+
+    bool using_pad;
+    bool controller_on;
 
     bool key_up;
     bool key_down;
@@ -13,12 +27,15 @@ struct controller {
 
     bool key_bomb;
 
-    Uint8 up, down, rigth, left, bomb;
-
+    Profile keys;
 };
 typedef struct controller Controller;
 
-Controller new_controller(Uint8 up, Uint8 down, Uint8 left, Uint8 right, Uint8 bomb);
+void input_init(Controller* controllers, int* players_on, Profile no);
+Controller new_controller(Profile keys);
 void check_inputs(Controller* controller);
+void input_exit(Controller* controller);
+Profile set_profile(Uint8 up, Uint8 down, Uint8 left, Uint8 right, Uint8 bomb);
+void assign_inputs(Controller* controllers, int* players_on, Profile m, Profile type0, Profile type1, Profile no);
 
 #endif

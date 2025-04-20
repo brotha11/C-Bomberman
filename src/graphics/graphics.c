@@ -7,8 +7,8 @@ void init_graphics(Graphics* graphics) {
     graphics->renderer = SDL_CreateRenderer(graphics->window,-1,SDL_RENDERER_PRESENTVSYNC);
     SDL_SetRenderDrawColor(graphics->renderer, 20,20,20,255);
 
-    graphics->x_multiplier = (SCREEN_WIDTH/BASE_WIDTH);
-    graphics->y_multiplier = (SCREEN_HEIGHT/BASE_HEIGHT);
+    graphics->y_multiplier = (int)(SCREEN_HEIGHT/BASE_HEIGHT);
+    graphics->x_multiplier = graphics->y_multiplier;
 
     graphics->rect.x = 0;
     graphics->rect.y = 0;
@@ -23,6 +23,26 @@ void init_graphics(Graphics* graphics) {
     graphics->sprites[TEX_BOMBER_WHITE].spr_width = 20;
     graphics->sprites[TEX_BOMBER_WHITE].spr_height = 24;
 
+    // Black bomber
+    graphics->sprites[TEX_BOMBER_BLACK].sprite = load_sprite(BOMBER_BLACK_PATH, graphics->renderer);
+    graphics->sprites[TEX_BOMBER_BLACK].spr_width = 20;
+    graphics->sprites[TEX_BOMBER_BLACK].spr_height = 24;
+
+    // Red bomber
+    graphics->sprites[TEX_BOMBER_RED].sprite = load_sprite(BOMBER_RED_PATH, graphics->renderer);
+    graphics->sprites[TEX_BOMBER_RED].spr_width = 20;
+    graphics->sprites[TEX_BOMBER_RED].spr_height = 24;
+
+    // Blue bomber
+    graphics->sprites[TEX_BOMBER_BLUE].sprite = load_sprite(BOMBER_BLUE_PATH, graphics->renderer);
+    graphics->sprites[TEX_BOMBER_BLUE].spr_width = 20;
+    graphics->sprites[TEX_BOMBER_BLUE].spr_height = 24;
+
+    // Green bomber
+    graphics->sprites[TEX_BOMBER_GREEN].sprite = load_sprite(BOMBER_GREEN_PATH, graphics->renderer);
+    graphics->sprites[TEX_BOMBER_GREEN].spr_width = 20;
+    graphics->sprites[TEX_BOMBER_GREEN].spr_height = 24;
+
     // Bombs
     graphics->sprites[TEX_BOMB].sprite = load_sprite(BOMB_PATH, graphics->renderer);
     graphics->sprites[TEX_BOMB].spr_width = 16;
@@ -36,7 +56,7 @@ void init_graphics(Graphics* graphics) {
     // Map 01
     graphics->sprites[TEX_MAP_01].sprite = load_sprite(MAP_01_PATH, graphics->renderer);
     graphics->sprites[TEX_MAP_01].spr_width = 256;
-    graphics->sprites[TEX_MAP_01].spr_height = 224;
+    graphics->sprites[TEX_MAP_01].spr_height = 256;
 
     graphics->sprites[TEX_BRICK].sprite = load_sprite(BRICK_01_PATH, graphics->renderer);
     graphics->sprites[TEX_BRICK].spr_width = 16;
@@ -51,24 +71,44 @@ void init_graphics(Graphics* graphics) {
     graphics->sprites[TEX_ITEM_BURN].spr_width = 16;
     graphics->sprites[TEX_ITEM_BURN].spr_height = 32;
 
-    graphics->background = new_sprite(256,224);
+    graphics->sprites[TEX_BATTLE_MODE_SCORE].sprite = load_sprite(BATTLE_MODE_SCORE_PATH, graphics->renderer);
+    graphics->sprites[TEX_BATTLE_MODE_SCORE].spr_width = 256;
+    graphics->sprites[TEX_BATTLE_MODE_SCORE].spr_height = 24;
+
+    graphics->sprites[TEX_GUI_SYMBOLS].sprite = load_sprite(GUI_SYMBOLS_PATH, graphics->renderer);
+    graphics->sprites[TEX_GUI_SYMBOLS].spr_width = 16;
+    graphics->sprites[TEX_GUI_SYMBOLS].spr_height = 16;
+
+    graphics->background = new_sprite(256,256);
+    graphics->score_gui = new_sprite(256,24);
+    graphics->gui_symbols = new_sprite(14,14);
 }
 
 bool graphics_event(Graphics* graphics) {
-    // Close Window
-    if (SDL_PollEvent( &graphics->window_event )){
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
 
-        if (SDL_QUIT == graphics->window_event.type){
+        graphics->window_event = event;  // Si lo necesitás guardar
+
+        if (event.type == SDL_QUIT) {
             return false;
         }
-        else if (graphics->window_event.type == SDL_KEYDOWN){
-            if (graphics->window_event.key.keysym.sym == SDLK_ESCAPE){
+        else if (event.type == SDL_KEYDOWN) {
+            if (event.key.keysym.sym == SDLK_ESCAPE) {
                 return false;
             }
         }
+
+        // (Opcional) Detectar conexión/desconexión de controladores
+        if (event.type == SDL_CONTROLLERDEVICEADDED)
+            printf("Gamepad agregado: %d\n", event.cdevice.which);
+        if (event.type == SDL_CONTROLLERDEVICEREMOVED)
+            printf("Gamepad removido: %d\n", event.cdevice.which);
     }
+
     return true;
 }
+
 
 void tex_render(Graphics* graphics, Sprite* sprite, int spr, int x, int y) {
 
@@ -84,27 +124,27 @@ void tex_render(Graphics* graphics, Sprite* sprite, int spr, int x, int y) {
 
 }
 
-void e_render(Graphics* graphics, Entity* entity) {
+void e_render(Graphics* graphics, Entity* entity, int cam_x, int cam_y) {
 
     SDL_SetRenderDrawColor(graphics->renderer, 255,255,255,125);
     
-    rect_resolution_fix(graphics, &graphics->rect, entity->x, entity->y, entity->width, entity->height);
+    rect_resolution_fix(graphics, &graphics->rect, entity->x - cam_x, entity->y - cam_y, entity->width, entity->height);
     SDL_RenderFillRect(graphics->renderer, &graphics->rect);
 
     SDL_SetRenderDrawColor(graphics->renderer, 0,0,0,255);
 }
 
-void b_render(Graphics* graphics, Bomb** bombs) {
+void b_render(Graphics* graphics, Bomb** bombs, int cam_x, int cam_y) {
     Bomb* current = *bombs;
     
     // Recorremos todos los bloques de colisión
     while (current != NULL) {
-        tex_render(graphics, &current->sprite, TEX_BOMB, current->x, current->y);
+        tex_render(graphics, &current->sprite, TEX_BOMB, current->x - cam_x, current->y - cam_y);
         current = current->next;
     }
 }
 
-void f_render(Graphics* graphics, Fire** fires) {
+void f_render(Graphics* graphics, Fire** fires, int cam_x, int cam_y) {
     SDL_SetRenderDrawColor(graphics->renderer, 20,80,100,255);
     
     Fire* current = *fires;
@@ -113,7 +153,7 @@ void f_render(Graphics* graphics, Fire** fires) {
     while (current != NULL) {
 
         if (current->visible) {
-            tex_render(graphics, &current->sprite, TEX_FIRE, current->x, current->y);
+            tex_render(graphics, &current->sprite, TEX_FIRE, current->x - cam_x, current->y - cam_y);
         }
         current = current->next;
     }
@@ -121,7 +161,7 @@ void f_render(Graphics* graphics, Fire** fires) {
     SDL_SetRenderDrawColor(graphics->renderer, 0,0,0,255);
 }
 
-void bri_render(Graphics* graphics, Brick** bricks) {
+void bri_render(Graphics* graphics, Brick** bricks, int cam_x, int cam_y) {
     Brick* current = *bricks;
     
     // Recorremos todos los bloques de colisión
@@ -132,13 +172,13 @@ void bri_render(Graphics* graphics, Brick** bricks) {
             continue;
         }
 
-        tex_render(graphics, &current->sprite, TEX_BRICK, current->coll->x, current->coll->y);
+        tex_render(graphics, &current->sprite, TEX_BRICK, current->coll->x - cam_x, current->coll->y - cam_y);
 
         current = current->next;
     }
 }
 
-void pw_render(Graphics* graphics, Power_up** powers) {
+void pw_render(Graphics* graphics, Power_up** powers, int cam_x, int cam_y) {
     Power_up* current = *powers;
     
     // Recorremos todos los bloques de colisión
@@ -146,9 +186,9 @@ void pw_render(Graphics* graphics, Power_up** powers) {
 
         if (current->visible) {
             if (current->grabable == 1) {
-                tex_render(graphics, &current->sprite, TEX_POWER_UPS, current->x, current->y);
+                tex_render(graphics, &current->sprite, TEX_POWER_UPS, current->x - cam_x, current->y - cam_y);
             } else {
-                tex_render(graphics, &current->sprite, TEX_ITEM_BURN, current->x, current->y);
+                tex_render(graphics, &current->sprite, TEX_ITEM_BURN, current->x - cam_x, current->y - cam_y);
             }
         }
 
@@ -173,6 +213,64 @@ void coll_render(Graphics* graphics, Collision* collision) {
     }
 
     SDL_SetRenderDrawColor(graphics->renderer, 0,0,0,255);
+}
+
+void gui_battle_render(Graphics* graphics, Battle_manager* battle) {
+    // Score gui
+    tex_render(graphics, &graphics->score_gui, TEX_BATTLE_MODE_SCORE, -get_center_x(256),0);
+    int CLOCK_X = -get_center_x(256) + 10;
+
+    // CLOCK
+    graphics->gui_symbols.frame_x = SY_CLOCK;
+    tex_render(graphics, &graphics->gui_symbols, TEX_GUI_SYMBOLS, CLOCK_X, 4); 
+    // Minutes digits
+    graphics->gui_symbols.frame_x = (int)(battle->battle_clock/60);
+    tex_render(graphics, &graphics->gui_symbols, TEX_GUI_SYMBOLS, CLOCK_X+14, 4);
+
+    // Colon
+    graphics->gui_symbols.frame_x = SY_COLON;
+    tex_render(graphics, &graphics->gui_symbols, TEX_GUI_SYMBOLS, CLOCK_X+22, 4);
+
+    // Tens digit of seconds
+    int seconds = battle->battle_clock % 60;
+    graphics->gui_symbols.frame_x = seconds / 10;
+    tex_render(graphics, &graphics->gui_symbols, TEX_GUI_SYMBOLS, CLOCK_X+30, 4);
+
+    // Units digit of seconds
+    graphics->gui_symbols.frame_x = seconds % 10;
+    tex_render(graphics, &graphics->gui_symbols, TEX_GUI_SYMBOLS, CLOCK_X+40, 4);
+
+
+    // Bomber faces
+    int bomber_places = CLOCK_X+64;
+    int separation = 36;
+    int pos = 0;
+
+    for (int i = 0; i < MAX_BATTLE_PLAYERS; ++i) {
+        if (battle->players_on[i] == 1) {
+            // Face
+            int spr = SY_BOMBER_W;
+
+            if (battle->players[i].base.alive == false) {
+                if (battle->players[i].death_timer <= DEATH_TIMER_MAX/10) spr = SY_DBOMB_W + i;
+                else {
+                    int frame = (int)((DEATH_TIMER_MAX - battle->players[i].death_timer) / (DEATH_TIMER_MAX/8));
+                    spr = SY_KILLED + (frame % 2);
+                }
+                graphics->gui_symbols.frame_x = spr;
+
+            } else graphics->gui_symbols.frame_x = spr + i;
+
+            tex_render(graphics, &graphics->gui_symbols, TEX_GUI_SYMBOLS, bomber_places + pos * separation, 4);
+
+            // Wins
+            graphics->gui_symbols.frame_x = battle->players_wins[i];
+            tex_render(graphics, &graphics->gui_symbols, TEX_GUI_SYMBOLS, 14 + bomber_places + pos * separation, 4);
+            ++pos;
+        }
+    }
+
+
 }
 
 // Fix size depending on the resolution of the game

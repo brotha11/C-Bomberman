@@ -2,12 +2,7 @@
 #define GRAPHICS_H
 
 #define GAME_NAME "C Bomberman"
-
-#define BASE_WIDTH 256
-#define BASE_HEIGHT 224
-
-#define SCREEN_WIDTH BASE_WIDTH*4
-#define SCREEN_HEIGHT BASE_HEIGHT*4
+//#define CLOCK_X 10
 
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_image.h"
@@ -19,6 +14,8 @@
 #include "../bombs/fire.h"
 #include "../blocks/brick.h"
 #include "../pickups/powerup.h"
+#include "../game/game_constants.h"
+#include "../modes/battle/battle_mode_manager.h"
 #include "sprite.h"
 
 typedef struct sprite_data {
@@ -38,6 +35,8 @@ struct graphics {
 
     Sprite_data* sprites;
     Sprite background;
+    Sprite score_gui;
+    Sprite gui_symbols;
 
     float x_multiplier;
     float y_multiplier;
@@ -51,12 +50,13 @@ bool graphics_event(Graphics* graphics);
 // Object draw
 void tex_render(Graphics* graphics, Sprite* sprite, int spr, int x, int y);
 
-void e_render(Graphics* graphics, Entity* entity);
+void e_render(Graphics* graphics, Entity* entity, int cam_x, int cam_y);
 void coll_render(Graphics* graphics, Collision* collision);
-void b_render(Graphics* graphics, Bomb** bombs);
-void f_render(Graphics* graphics, Fire** fires);
-void bri_render(Graphics* graphics, Brick** bricks);
-void pw_render(Graphics* graphics, Power_up** powers);
+void b_render(Graphics* graphics, Bomb** bombs, int cam_x, int cam_y);
+void f_render(Graphics* graphics, Fire** fires, int cam_x, int cam_y);
+void bri_render(Graphics* graphics, Brick** bricks, int cam_x, int cam_y);
+void pw_render(Graphics* graphics, Power_up** powers, int cam_x, int cam_y);
+void gui_battle_render(Graphics* graphics, Battle_manager* battle);
 
 void free_graphics(Graphics* graphics);
 

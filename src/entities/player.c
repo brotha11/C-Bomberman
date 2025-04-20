@@ -1,10 +1,10 @@
 #include "player.h"
 
-Player new_player(int x, int y, int w, int h, float max, int spr) {
+Player new_player(int x, int y, int w, int h, float max, int id) {
 
     Player new;
 
-    new.base = new_entity(x,y,w,h,max,spr);
+    new.base = new_entity(x,y,w,h,max);
     new.bomb_placed_timer = BOMB_COOLDOWN;
     new.blast_power = 2;
     new.bomb_amount = 1;
@@ -16,6 +16,8 @@ Player new_player(int x, int y, int w, int h, float max, int spr) {
 
     new.base.sprite.frame_x_max = 4;
     new.base.sprite.x_off = -2;
+    new.player_on = false;
+    new.id = id;
 
     return new;
 }
@@ -77,6 +79,7 @@ void p_update(Player* player, Controller* controller, Collision** collision, Bom
 
         // Bomb effects
 
+        // Kick
         if (player->kick_power == 1) {
             Bomb* coll_x = (coll_bomb_ext(bombs,player->base.x + player->move_x, player->base.y,
                     player->base.x, player->base.y, 16, 16));
@@ -126,13 +129,7 @@ void p_update(Player* player, Controller* controller, Collision** collision, Bom
 
         //get killed
         if (coll_fire(fires,player->base.x,player->base.y,player->base.width, player->base.height)) {
-            if (player->base.alive) {
-
-                play_sound(SFX_DEATH);
-
-                player->base.alive = false;
-                player->death_timer = DEATH_TIMER_MAX;
-            }
+            player_kill(player, true);
         }
     }
     // Reduce death timer
@@ -170,7 +167,8 @@ void p_update(Player* player, Controller* controller, Collision** collision, Bom
         if (player->base.facing_x == -1) player->base.sprite.frame_y = P_LEFT;
         else if (player->base.facing_x == 1) player->base.sprite.frame_y = P_RIGHT;
     } else { // Dead
-        player->base.sprite.frame_y = P_BLOWN;
+        if (player->burned) player->base.sprite.frame_y = P_BLOWN;
+        else player->base.sprite.frame_y = P_DEAD;
 
         if (player->death_timer > DEATH_START) {
             player->base.sprite.frame_x = 0;
@@ -180,12 +178,8 @@ void p_update(Player* player, Controller* controller, Collision** collision, Bom
             if (player->death_timer == DEATH_START) {
                 unsigned seed = (clock() + player->base.x * player->base.y);
 
-                switch(seed % DEATH_VC) {
-                    case 0: play_sound(SFX_DEATH_VC0); break;
-                    case 1: play_sound(SFX_DEATH_VC1); break;
-                    case 2: play_sound(SFX_DEATH_VC2); break;
-                    default: play_sound(SFX_KICK); break;
-                }
+                int plus = round(seed % DEATH_VC);
+                play_sound(SFX_DEATH_VC0+plus);
             }
 
             if (player->base.sprite.image_speed != -1) {
@@ -226,5 +220,15 @@ void place_bomb_line(Player* player, Bomb** bombs, Collision** collision, Power_
 
         // Aumentamos el índice para colocar la siguiente bomba más lejos
         ++index;
+    }
+}
+
+void player_kill(Player* player, bool burnt) {
+    if (player->base.alive) {
+        play_sound(SFX_DEATH);
+
+        player->burned = burnt;
+        player->base.alive = false;
+        player->death_timer = DEATH_TIMER_MAX;
     }
 }

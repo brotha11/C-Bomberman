@@ -30,7 +30,7 @@ struct entity {
 };
 typedef struct entity Entity;
 
-Entity new_entity(int x, int y, int width, int height, float max, int spr);
+Entity new_entity(int x, int y, int width, int height, float max);
 void e_move(Entity* entity, Collision** collision);
 void e_move_all(Entity* entity, Collision** collision, Power_up** powers);
 void e_update(Entity* entity, Collision** collision, Fire** fires);

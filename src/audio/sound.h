@@ -4,7 +4,7 @@
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_mixer.h"
 
-#define DEATH_VC 3
+#define DEATH_VC 4
 
 typedef enum {
     SFX_PLACE_BOMB, 
@@ -15,6 +15,7 @@ typedef enum {
     SFX_DEATH_VC0,
     SFX_DEATH_VC1,
     SFX_DEATH_VC2,
+    SFX_DEATH_VC3,
     TOTAL_SOUNDS
 } SFX;
 

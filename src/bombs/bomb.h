@@ -7,9 +7,11 @@
 #include "../pickups/powerup.h"
 #include "../entities/entity.h"
 #include "../audio/sound.h"
+#include "../rooms/tile_manager.h"
 
-#define BOMB_KICK_SPEED 1.75
+#define BOMB_KICK_SPEED 2
 #define BOMB_TIMER 180
+#define BOMB_HB 16
 
 struct fire;
 typedef struct fire Fire;
@@ -27,6 +29,7 @@ struct bomb {
     int* owner;
 
     int kick_x, kick_y;
+    //int x_offset, y_offset;
 
     Sprite sprite;
     struct bomb* next;
@@ -41,6 +44,5 @@ void free_all_bombs(Bomb** head, Collision** head_coll);
 
 void b_update(Bomb** head, Fire** fire, Collision** collision, Power_up** powers);
 void b_explode(Bomb** head, Bomb* bomb, Fire** fire, Collision** collision, Power_up** powers);
-void get_tile_position(int* tile_x, int* tile_y, int x, int y, int w, int h);
 
 #endif

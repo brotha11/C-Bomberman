@@ -18,6 +18,7 @@ void sound_init() {
     sfx[SFX_DEATH_VC0] = Mix_LoadWAV("res/sfx/vc_death_00.wav");
     sfx[SFX_DEATH_VC1] = Mix_LoadWAV("res/sfx/vc_death_01.wav");
     sfx[SFX_DEATH_VC2] = Mix_LoadWAV("res/sfx/vc_death_02.wav");
+    sfx[SFX_DEATH_VC3] = Mix_LoadWAV("res/sfx/vc_death_03.wav");
 
     for (int i = 0; i < TOTAL_SOUNDS; i++) {
         if (!sfx[i]) {

@@ -4,9 +4,9 @@
 void add_bomb(Bomb** head, Collision** colls, int* owner_bomb, int col, int row, int blast) {
     Bomb* new_bomb = (Bomb*)malloc(sizeof(Bomb));
     
-    add_collision(colls, col, row, 16, 16);
+    add_collision(colls, col, row, BOMB_HB, BOMB_HB);
 
-    new_bomb->move = new_entity(col,row,16,16,BOMB_KICK_SPEED, TEX_BOMB);
+    new_bomb->move = new_entity(col,row,16,16,BOMB_KICK_SPEED);
 
     new_bomb->coll = *colls; // Apunta a la colisión recién creada
     new_bomb->x = col;
@@ -15,8 +15,10 @@ void add_bomb(Bomb** head, Collision** colls, int* owner_bomb, int col, int row,
 
     new_bomb->timer = BOMB_TIMER;
 
-    new_bomb->width = 16; new_bomb->height = 16;
+    new_bomb->width = BOMB_HB; new_bomb->height = BOMB_HB;
     new_bomb->kick_x = 0; new_bomb->kick_y = 0;
+
+    //new_bomb->x_offset = new_bomb->y_offset = 0;
 
     new_bomb->owner = owner_bomb;
     (*new_bomb->owner)++;
@@ -24,6 +26,8 @@ void add_bomb(Bomb** head, Collision** colls, int* owner_bomb, int col, int row,
     new_bomb->sprite = new_sprite(16,16);
     new_bomb->sprite.image_speed = 14;
     new_bomb->sprite.frame_x_max = 4;
+    new_bomb->sprite.x_off = 16-BOMB_HB;
+    new_bomb->sprite.y_off = 16-BOMB_HB;
 
     // Play sound for placing bomb
     play_sound(SFX_PLACE_BOMB);
@@ -44,6 +48,10 @@ void b_update(Bomb** head, Fire** fires, Collision** collision, Power_up** power
             current = next_bomb;
             continue;  
         }
+
+        // Save offset
+        //current->x_offset = base_x%16;
+        //current->y_offset = base_y%16;
 
         // Kicked
         if (current->move.hspeed + current->move.vspeed == 0 && current->kick_x + current->kick_y != 0) {
@@ -169,19 +177,6 @@ Bomb* coll_bomb_ext(Bomb** head, int x, int y, int true_x, int true_y, int width
         current = current->next;
     }
     return NULL;  // No hay colisión
-}
-
-void get_tile_position(int* tile_x, int* tile_y, int x, int y, int w, int h) {
-    int p_x = x + w / 2;  // Centro del jugador en X
-    int p_y = y + h / 2; // Centro del jugador en Y
-
-    *tile_x = p_x / 16;  // Tile en el que está el centro del jugador (horizontal)
-    *tile_y = p_y / 16;  // Tile en el que está el centro del jugador (vertical)
-
-    if (p_x % 16 >= 8) (*tile_x)++;
-
-    *tile_x = *tile_x * 16 - 8;
-    *tile_y = *tile_y * 16;
 }
 
 void free_bomb(Bomb** head, Collision** head_coll, Bomb* bomb) {

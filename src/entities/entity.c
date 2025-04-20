@@ -1,6 +1,6 @@
 #include "entity.h"
 
-Entity new_entity(int x, int y, int width, int height, float max, int spr) {
+Entity new_entity(int x, int y, int width, int height, float max) {
     Entity new;
 
     new.alive = true;

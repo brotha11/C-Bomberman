@@ -1,0 +1,15 @@
+#ifndef GAME_CONSTANTS_H
+#define GAME_CONSTANTS_H
+
+#define MAX_BATTLE_PLAYERS 5
+#define SECOND 60
+
+#define BASE_WIDTH 256
+#define BASE_HEIGHT 224
+
+#define SCREEN_WIDTH 1920
+#define SCREEN_HEIGHT 1080
+
+#define TILE 16
+
+#endif
