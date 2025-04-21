@@ -16,17 +16,19 @@
 struct fire;
 typedef struct fire Fire;
 
+struct player;
+typedef struct player Player;
 
 struct bomb {
     Collision* coll;
     Entity move;
+    Player* owner;
 
     int x,y;
     int width, height;
 
     int timer;
     int blast_radius;
-    int* owner;
 
     int kick_x, kick_y;
     //int x_offset, y_offset;
@@ -36,7 +38,7 @@ struct bomb {
 };
 typedef struct bomb Bomb;
 
-void add_bomb(Bomb** head, Collision** colls, int* owner_bomb, int col, int row, int blast);
+void add_bomb(Bomb** head, Collision** colls, Player* owner_bomb, int col, int row, int blast);
 Bomb* coll_bomb(Bomb** head, int x, int y, int width, int height);
 Bomb* coll_bomb_ext(Bomb** head, int x, int y, int true_x, int true_y, int width, int height);
 void free_bomb(Bomb** head, Collision** head_coll, Bomb* bomb);

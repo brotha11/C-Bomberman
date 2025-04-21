@@ -32,6 +32,8 @@ struct controller {
 typedef struct controller Controller;
 
 void input_init(Controller* controllers, int* players_on, Profile no);
+void set_joys(Controller* controllers, int* players_on);
+
 Controller new_controller(Profile keys);
 void check_inputs(Controller* controller);
 void input_exit(Controller* controller);

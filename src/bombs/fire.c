@@ -1,7 +1,7 @@
 #include "fire.h"
 #include "bomb.h"
 
-void add_fire(Fire** fires, Bomb** bombs, Collision** collision, Power_up** powers,
+void add_fire(Fire** fires, Bomb** bombs, Collision** collision, Power_up** powers, Player* owner,
     int x, int y, int direction, int length, bool visible, bool center) {
     // Si length es menor o igual a 0, terminamos la recursión
 
@@ -9,6 +9,8 @@ void add_fire(Fire** fires, Bomb** bombs, Collision** collision, Power_up** powe
 
     int m_x = 0, m_y = 0;
     int next_x = 0, next_y = 0;
+
+    new->owner = owner;
 
     new->direction = direction;
     new->length = length;
@@ -93,8 +95,8 @@ void add_fire(Fire** fires, Bomb** bombs, Collision** collision, Power_up** powe
         if (!coll_bomb(bombs, new->x + next_x - m_x, new->y + next_y - m_y, new->width, new->height) 
             && !coll_meeting(collision, new->x + next_x - m_x, new->y + next_y - m_y, new->width, new->height)
                 && !grab_powerup(powers, new->x + next_x - m_x, new->y + next_y - m_y, 16, 16))
-            add_fire(fires, bombs, collision, powers, new->x + next_x - m_x, new->y + next_y - m_y, direction, length - 1, true, false);
-        else add_fire(fires, bombs, collision, powers, new->x + next_x - m_x, new->y + next_y - m_y, direction, 0, false, false);
+            add_fire(fires, bombs, collision, powers, owner, new->x + next_x - m_x, new->y + next_y - m_y, direction, length - 1, true, false);
+        else add_fire(fires, bombs, collision, powers, owner, new->x + next_x - m_x, new->y + next_y - m_y, direction, 0, false, false);
     }
 }
 

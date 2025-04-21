@@ -14,6 +14,9 @@
 struct bomb;
 typedef struct bomb Bomb;
 
+struct player;
+typedef struct player Player;
+
 struct fire {
 
     int x, y;
@@ -25,12 +28,13 @@ struct fire {
     bool swap_visible;
     bool center;
 
+    Player* owner;
     Sprite sprite;
     struct fire* next;
 };
 typedef struct fire Fire;
 
-void add_fire(Fire** fires, Bomb** bombs, Collision** collision, Power_up** powers,
+void add_fire(Fire** fires, Bomb** bombs, Collision** collision, Power_up** powers, Player* owner,
     int x, int y, int direction, int length, bool visible, bool center);
 Fire* coll_fire(Fire** head, int x, int y, int width, int height);
 Fire* coll_fire_exclude(Fire** head, Fire* ignore, int x, int y, int width, int height);

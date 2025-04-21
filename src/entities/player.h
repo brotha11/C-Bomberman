@@ -20,6 +20,8 @@
 #define DEATH_START DEATH_TIMER_MAX - 25
 #define DEATH_END DEATH_START - 30
 
+#define KILL_CELEBRATION 80
+
 #define BOMB_COOLDOWN 12
 
 struct player {
@@ -33,6 +35,7 @@ struct player {
     int id;
 
     int death_timer;
+    int kill_celebration_timer;
 
     int bomb_placed_timer;
     bool bomb_released;

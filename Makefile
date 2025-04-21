@@ -1,5 +1,4 @@
 # Variables comunes
-# SRC = src/game/*.c src/blocks/*.c src/entities/*.c src/bombs/*.c src/graphics/*.c src/input/*.c src/pickups/*.c src/audio/*.c src/rooms/*.c
 SRC :=  $(wildcard src/audio/*.c) \
         $(wildcard src/blocks/*.c) \
         $(wildcard src/bombs/*.c) \
@@ -18,20 +17,20 @@ NAME = C-Bomberman
 
 all: w
 
-# Compilando para Windows
+# Compile for Windows
 w: 
 	$(CC) $(CFLAGS) -o $(NAME) $(SRC) -lmingw32 $(LIBS)
 
-# Compilando para Linux
+# Compile for Linux
 l:
 	$(CC) -o $(NAME) $(SRC) $(LIBS) -lm
 
 gdb:
 	$(CC) -g $(CFLAGS) -o $(NAME) $(SRC) -lmingw32 $(LIBS)
 
-# Ejecutar
+# Execute
 run:
 	./$(NAME)
 
-# Declaramos que estas reglas no son archivos
+# Declare rules
 .PHONY: w l r gdb all

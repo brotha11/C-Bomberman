@@ -18,6 +18,7 @@ Player new_player(int x, int y, int w, int h, float max, int id) {
     new.base.sprite.x_off = -2;
     new.player_on = false;
     new.id = id;
+    new.kill_celebration_timer = 0;
 
     return new;
 }
@@ -128,10 +129,20 @@ void p_update(Player* player, Controller* controller, Collision** collision, Bom
         }
 
         //get killed
-        if (coll_fire(fires,player->base.x,player->base.y,player->base.width, player->base.height)) {
+
+        // Explosion
+        Fire* fire = coll_fire(fires,player->base.x,player->base.y,player->base.width, player->base.height);
+        if (fire) {
+            if (player->base.alive) 
+                fire->owner->kill_celebration_timer = KILL_CELEBRATION;
             player_kill(player, true);
         }
-    }
+
+
+        // Reduce kill timer
+        if (player->kill_celebration_timer > 0) player->kill_celebration_timer--;
+
+    } // ALIVE END IF
     // Reduce death timer
     else {
         if (player->death_timer != 0) player->death_timer--;
@@ -197,7 +208,7 @@ void place_bomb(Player* player, Bomb** bombs, Collision** collision) {
     get_tile_position(&tile_x, &tile_y, player->base.x, player->base.y, 16, 16);
 
     if (!coll_bomb(bombs, tile_x, tile_y, 16, 16)) {
-        add_bomb(bombs, collision, &player->bombs_placed, tile_x, tile_y, player->blast_power);
+        add_bomb(bombs, collision, player, tile_x, tile_y, player->blast_power);
         player->bomb_placed_timer = BOMB_COOLDOWN;
     }
 }
@@ -216,7 +227,7 @@ void place_bomb_line(Player* player, Bomb** bombs, Collision** collision, Power_
         }
 
         // Colocamos la bomba en la posición calculada
-        add_bomb(bombs, collision, &player->bombs_placed, tile_x, tile_y, player->blast_power);
+        add_bomb(bombs, collision, player, tile_x, tile_y, player->blast_power);
 
         // Aumentamos el índice para colocar la siguiente bomba más lejos
         ++index;

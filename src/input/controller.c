@@ -5,6 +5,10 @@ void input_init(Controller* controllers, int* players_on, Profile no) {
     for (int i = 0; i < MAX_BATTLE_PLAYERS; ++i) {
         controllers[i] = new_controller(no);
     }
+    set_joys(controllers, players_on);
+}
+
+void set_joys(Controller* controllers, int* players_on) {
     int num_joy = SDL_NumJoysticks();
     printf("Detectados %d dispositivos de entrada.\n", num_joy);
 

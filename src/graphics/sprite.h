@@ -16,6 +16,8 @@ typedef enum {
     TEX_ITEM_BURN,
     TEX_BATTLE_MODE_SCORE,
     TEX_GUI_SYMBOLS,
+    TEX_BG_OCEAN_00,
+    TEX_BG_GRASS_00,
     TEX_AMOUNT
 } TEXTURES;
 
@@ -68,9 +70,10 @@ typedef enum {
 #define BRICK_01_PATH "res/brick_01.png"
 #define POWER_UPS_PATH "res/power_ups.png"
 #define ITEM_BURN_PATH "res/item_burn.png"
-
 #define BATTLE_MODE_SCORE_PATH "res/battle_mode_score.png"
 #define GUI_SYMBOLS_PATH "res/gui_numbers.png"
+#define BG_OCEAN_00_PATH "res/bg_ocean_00.png"
+#define BG_GRASS_00_PATH "res/bg_grass_00.png"
 
 #define SPR 0
 #define SPR_WIDTH 1

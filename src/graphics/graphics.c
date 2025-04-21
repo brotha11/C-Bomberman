@@ -15,6 +15,11 @@ void init_graphics(Graphics* graphics) {
     graphics->rect.w = 0;
     graphics->rect.h = 0;
 
+    // Backgrounds
+    for (int i = 0; i < MAX_BACKGROUND_COUNT; ++i) {
+        graphics->backgrounds[i] = new_bg(0, 0, 0, 0, 0, 0, 0, 0, 0);
+    }
+
     // Load textures
     graphics->sprites = (Sprite_data*)malloc(TEX_AMOUNT * sizeof(Sprite_data));
 
@@ -79,7 +84,15 @@ void init_graphics(Graphics* graphics) {
     graphics->sprites[TEX_GUI_SYMBOLS].spr_width = 16;
     graphics->sprites[TEX_GUI_SYMBOLS].spr_height = 16;
 
-    graphics->background = new_sprite(256,256);
+    graphics->sprites[TEX_BG_OCEAN_00].sprite = load_sprite(BG_OCEAN_00_PATH, graphics->renderer);
+    graphics->sprites[TEX_BG_OCEAN_00].spr_width = 128;
+    graphics->sprites[TEX_BG_OCEAN_00].spr_height = 64;
+
+    graphics->sprites[TEX_BG_GRASS_00].sprite = load_sprite(BG_GRASS_00_PATH, graphics->renderer);
+    graphics->sprites[TEX_BG_GRASS_00].spr_width = 256;
+    graphics->sprites[TEX_BG_GRASS_00].spr_height = 256;
+
+    graphics->ground = new_sprite(256,256);
     graphics->score_gui = new_sprite(256,24);
     graphics->gui_symbols = new_sprite(14,14);
 }
@@ -215,6 +228,26 @@ void coll_render(Graphics* graphics, Collision* collision) {
     SDL_SetRenderDrawColor(graphics->renderer, 0,0,0,255);
 }
 
+void background_render(Graphics* graphics, Background* backgrounds) {
+    for (int i = 0; i < MAX_BACKGROUND_COUNT; ++i) {
+        Background* bg = &backgrounds[i];
+
+        if (bg->used == 0) continue;
+
+        int scale = (int)(SCREEN_HEIGHT/BASE_HEIGHT);
+        int extra_x = 3;
+        int repetitions_x = (int)((SCREEN_WIDTH / scale) / bg->sprite.width) + extra_x;
+        int repetitions_y = (int)((SCREEN_HEIGHT / scale) / bg->sprite.height) + extra_x;
+
+        for (int j = -extra_x; j < repetitions_x; ++j) {
+            for (int k = -extra_x; k < repetitions_y; ++k)
+                tex_render(graphics, &bg->sprite, TEX_BG_GRASS_00 + i,
+                    bg->x + j * bg->sprite.width, 
+                    bg->y + k * bg->sprite.height);
+        }
+    }
+}
+
 void gui_battle_render(Graphics* graphics, Battle_manager* battle) {
     // Score gui
     tex_render(graphics, &graphics->score_gui, TEX_BATTLE_MODE_SCORE, -get_center_x(256),0);
@@ -251,6 +284,7 @@ void gui_battle_render(Graphics* graphics, Battle_manager* battle) {
             // Face
             int spr = SY_BOMBER_W;
 
+            // DEAD
             if (battle->players[i].base.alive == false) {
                 if (battle->players[i].death_timer <= DEATH_TIMER_MAX/10) spr = SY_DBOMB_W + i;
                 else {
@@ -259,7 +293,16 @@ void gui_battle_render(Graphics* graphics, Battle_manager* battle) {
                 }
                 graphics->gui_symbols.frame_x = spr;
 
-            } else graphics->gui_symbols.frame_x = spr + i;
+            } else { // ALIVE
+                // Idle
+                if (battle->players[i].kill_celebration_timer == 0) {
+                    graphics->gui_symbols.frame_x = spr + i;
+                } else { // Celebrating
+                    int face = SY_KBOMB_W + i*2;
+                    int frame = (int)((KILL_CELEBRATION - battle->players[i].kill_celebration_timer) / (KILL_CELEBRATION/6));
+                    graphics->gui_symbols.frame_x = face + (frame % 2);
+                }
+            }
 
             tex_render(graphics, &graphics->gui_symbols, TEX_GUI_SYMBOLS, bomber_places + pos * separation, 4);
 

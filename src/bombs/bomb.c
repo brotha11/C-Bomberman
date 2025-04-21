@@ -1,7 +1,8 @@
 #include "bomb.h"
 #include "fire.h"
+#include "../entities/player.h"
 
-void add_bomb(Bomb** head, Collision** colls, int* owner_bomb, int col, int row, int blast) {
+void add_bomb(Bomb** head, Collision** colls, Player* owner_bomb, int col, int row, int blast) {
     Bomb* new_bomb = (Bomb*)malloc(sizeof(Bomb));
     
     add_collision(colls, col, row, BOMB_HB, BOMB_HB);
@@ -21,7 +22,7 @@ void add_bomb(Bomb** head, Collision** colls, int* owner_bomb, int col, int row,
     //new_bomb->x_offset = new_bomb->y_offset = 0;
 
     new_bomb->owner = owner_bomb;
-    (*new_bomb->owner)++;
+    if (new_bomb->owner) new_bomb->owner->bombs_placed++;
 
     new_bomb->sprite = new_sprite(16,16);
     new_bomb->sprite.image_speed = 14;
@@ -119,10 +120,10 @@ void b_explode(Bomb** head, Bomb* bomb, Fire** fires, Collision** collision, Pow
     bomb->x = tile_x;
     bomb->y = tile_y;
 
-    add_fire(fires, head, collision, powers, bomb->x, bomb->y, UP, bomb->blast_radius,true, true);
-    add_fire(fires, head, collision, powers, bomb->x, bomb->y, DOWN, bomb->blast_radius,true, true);
-    add_fire(fires, head, collision, powers, bomb->x, bomb->y, LEFT, bomb->blast_radius, true, true);
-    add_fire(fires, head, collision, powers, bomb->x, bomb->y, RIGHT, bomb->blast_radius, true, true);
+    add_fire(fires, head, collision, powers, bomb->owner, bomb->x, bomb->y, UP, bomb->blast_radius,true, true);
+    add_fire(fires, head, collision, powers, bomb->owner, bomb->x, bomb->y, DOWN, bomb->blast_radius,true, true);
+    add_fire(fires, head, collision, powers, bomb->owner, bomb->x, bomb->y, LEFT, bomb->blast_radius, true, true);
+    add_fire(fires, head, collision, powers, bomb->owner, bomb->x, bomb->y, RIGHT, bomb->blast_radius, true, true);
 
     play_sound(SFX_BLOW_UP_R);
 
@@ -185,7 +186,9 @@ void free_bomb(Bomb** head, Collision** head_coll, Bomb* bomb) {
     if (temp != NULL && temp == bomb) { 
         *head = temp->next; // Changed head 
 
-        if (temp->x != -1234) (*temp->owner)--;
+        if (temp->x != -1234) {
+            if (temp->owner) temp->owner->bombs_placed--;
+        }
         free_single(head_coll, temp->coll);
         free(temp); // free old head 
 
@@ -206,7 +209,9 @@ void free_bomb(Bomb** head, Collision** head_coll, Bomb* bomb) {
     // Unlink the node from linked list 
     prev->next = temp->next; 
   
-    if (temp->x != -1234) (*temp->owner)--;
+    if (temp->x != -1234) {
+        if (temp->owner) temp->owner->bombs_placed--;
+    }
     free_single(head_coll, temp->coll);
     free(temp); // Free memory 
 }
@@ -217,6 +222,9 @@ void free_all_bombs(Bomb** head, Collision** head_coll) {
 
     while (current != NULL) {
         next = current->next;  // Guardar referencia al siguiente nodo
+        if (current->x != -1234) {
+            if (current->owner) current->owner->bombs_placed--;
+        }
         free_single(head_coll, current->coll);
         free(current);
         current = next;  // Mover al siguiente nodo

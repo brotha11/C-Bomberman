@@ -11,5 +11,6 @@
 #define SCREEN_HEIGHT 1080
 
 #define TILE 16
+#define MAX_BACKGROUND_COUNT 5
 
 #endif

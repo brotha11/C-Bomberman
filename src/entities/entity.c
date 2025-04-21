@@ -137,9 +137,10 @@ void e_move_all(Entity* entity, Collision** collision, Power_up** powers) {
         entity->y, entity->x, entity->y, entity->width, entity->height)) {
             coll_x = 1;
         }
-        if(coll_powerup(powers, entity->x + e_sign(entity->final_x), 
-        entity->y, entity->width, entity->height)) {
-            coll_x = 1;
+        Power_up* pw = (coll_powerup(powers, entity->x + e_sign(entity->final_x), 
+        entity->y, entity->width, entity->height));
+        if (pw) {
+            free_powerup(powers, pw);
         }
 
         if (coll_x == 0) {
@@ -164,10 +165,11 @@ void e_move_all(Entity* entity, Collision** collision, Power_up** powers) {
             entity->x, entity->y, entity->width, entity->height)) {
                 coll_y = 1;
             }
-        if (coll_powerup(powers, entity->x, entity->y + e_sign(entity->final_y), 
-            entity->width, entity->height)) {
-                coll_y = 1;
-            }
+        Power_up* pw = coll_powerup(powers, entity->x, entity->y + e_sign(entity->final_y), 
+            entity->width, entity->height);
+        if (pw) {
+            free_powerup(powers, pw);
+        }
 
         if (coll_y == 0) {
             entity->y += e_sign(entity->vspeed);

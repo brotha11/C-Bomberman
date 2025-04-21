@@ -17,11 +17,13 @@ void init_game(Game* game) {
 
     battle_init(&game->battle);
 
+
     start_room(game);
 }
 
 void update(Game* game) {
     battle_update(&game->battle, game->controllers);
+    bg_update(game->graphics.backgrounds);
 }
 
 void start_room(Game* game) {
@@ -29,6 +31,9 @@ void start_room(Game* game) {
     input_init(game->controllers, game->battle.players_on, game->nouse_profile);
     assign_inputs(game->controllers, game->battle.players_on, game->main_profile, 
         game->type0_profile, game->type1_profile, game->nouse_profile);
+
+    game->graphics.backgrounds[0] = new_bg(-game->battle.camera.x*2,0,256,256,1,1,0,0,1);
+    //game->graphics.backgrounds[1] = new_bg(game->battle.camera.x,133,256,137,1,0,0,0,1);
 }
 
 void render(Game* game) {
@@ -48,8 +53,12 @@ void render(Game* game) {
     
     int c_x = r_cam->x;
     int c_y = r_cam->y;
+
+    // Background
+    background_render(&game->graphics, game->graphics.backgrounds);
+
     // Map
-    tex_render(&game->graphics, &game->graphics.background, TEX_MAP_01, 8 - c_x,0 - c_y);
+    tex_render(&game->graphics, &game->graphics.ground, TEX_MAP_01, 8 - c_x,0 - c_y);
 
     f_render(&game->graphics, r_fires, c_x, c_y);
     bri_render(&game->graphics, r_bricks, c_x, c_y);
@@ -81,8 +90,15 @@ void run_game(Game* game) {
        
         int event = catch_events();
         switch(event) {
-            case EV_CLOSE_GAME: game->game_running = false; break;
-            case EV_GAMEPAD_CON: input_init(game->controllers, game->battle.players_on, game->nouse_profile); break;
+            case EV_CLOSE_GAME: 
+                game->game_running = false; 
+                break;
+            case EV_GAMEPAD_DISC:
+            case EV_GAMEPAD_CON: 
+                set_joys(game->controllers, game->battle.players_on); 
+                assign_inputs(game->controllers, game->battle.players_on, game->main_profile, 
+                    game->type0_profile, game->type1_profile, game->nouse_profile);
+                break;
         }
     }
 }

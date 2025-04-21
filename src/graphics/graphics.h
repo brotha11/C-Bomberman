@@ -16,6 +16,7 @@
 #include "../pickups/powerup.h"
 #include "../game/game_constants.h"
 #include "../modes/battle/battle_mode_manager.h"
+#include "background.h"
 #include "sprite.h"
 
 typedef struct sprite_data {
@@ -34,9 +35,11 @@ struct graphics {
     SDL_Rect rect;
 
     Sprite_data* sprites;
-    Sprite background;
+    Sprite ground;
     Sprite score_gui;
     Sprite gui_symbols;
+
+    Background backgrounds[MAX_BACKGROUND_COUNT];
 
     float x_multiplier;
     float y_multiplier;
@@ -57,6 +60,7 @@ void f_render(Graphics* graphics, Fire** fires, int cam_x, int cam_y);
 void bri_render(Graphics* graphics, Brick** bricks, int cam_x, int cam_y);
 void pw_render(Graphics* graphics, Power_up** powers, int cam_x, int cam_y);
 void gui_battle_render(Graphics* graphics, Battle_manager* battle);
+void background_render(Graphics* graphics, Background* backgrounds);
 
 void free_graphics(Graphics* graphics);
 
