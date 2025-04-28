@@ -7,9 +7,6 @@
 #define BASE_WIDTH 256
 #define BASE_HEIGHT 224
 
-#define SCREEN_WIDTH 1920
-#define SCREEN_HEIGHT 1080
-
 #define TILE 16
 #define MAX_BACKGROUND_COUNT 5
 

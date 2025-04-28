@@ -31,8 +31,8 @@ void battle_selection(Battle_manager* battle) {
     }*/
 }
 
-void battle_load(Battle_manager* battle) {
-    battle->camera = new_camera(get_center_x(256) + 8, get_center_y(224), BASE_WIDTH, BASE_HEIGHT, 0.25f, CAM_STOP);
+void battle_load(Battle_manager* battle, Screen* screen) {
+    battle->camera = new_camera(get_center_x(screen, 256) + 8, get_center_y(screen, 224), BASE_WIDTH, BASE_HEIGHT, 0.25f, CAM_STOP);
 
     int base_x = 48;
     int base_y = 48;
@@ -114,7 +114,7 @@ void battle_load(Battle_manager* battle) {
     }
 }
 
-void battle_update(Battle_manager* battle, Controller* controllers) {
+void battle_update(Battle_manager* battle, Controller* controllers, Screen* screen) {
     int alive_players = MAX_BATTLE_PLAYERS;
 
     battle_clock_count(&battle->battle_clock, &battle->battle_tick);
@@ -153,7 +153,7 @@ void battle_update(Battle_manager* battle, Controller* controllers) {
                 battle->players_wins[p]++;
             }
         }
-        battle_load(battle);
+        battle_load(battle, screen);
     }
     /*if (alive_players == 1) {
         battle->camera.state = CAM_FOLLOW;

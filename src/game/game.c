@@ -38,6 +38,10 @@ void run_game(Game* game) {
                 assign_inputs(game->controllers, game->battle.players_on, game->main_profile, 
                     game->type0_profile, game->type1_profile, game->nouse_profile);
                 break;
+            case EV_FULLSCREEN:
+                set_screen_size(&game->graphics.screen, 800, 600, 1);
+                update_window_size(&game->graphics);
+                break;
         }
     }
 }
@@ -50,12 +54,12 @@ void free_game(Game* game) {
 }
 
 void update(Game* game) {
-    battle_update(&game->battle, game->controllers);
+    battle_update(&game->battle, game->controllers, &game->graphics.screen);
     bg_update(game->graphics.backgrounds);
 }
 
 void start_room(Game* game) {
-    battle_load(&game->battle);
+    battle_load(&game->battle, &game->graphics.screen);
     input_init(game->controllers, game->battle.players_on, game->nouse_profile);
     assign_inputs(game->controllers, game->battle.players_on, game->main_profile, 
         game->type0_profile, game->type1_profile, game->nouse_profile);

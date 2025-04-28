@@ -6,6 +6,7 @@
 typedef enum {
     EV_CLOSE_GAME,
     EV_NONE,
+    EV_FULLSCREEN,
     EV_GAMEPAD_DISC,
     EV_GAMEPAD_CON,
 

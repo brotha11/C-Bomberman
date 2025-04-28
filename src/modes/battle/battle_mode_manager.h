@@ -47,8 +47,8 @@ typedef struct battle_manager {
 
 void battle_init(Battle_manager* battle);
 void battle_selection(Battle_manager* battle);
-void battle_load(Battle_manager* battle);
-void battle_update(Battle_manager* battle, Controller* controllers);
+void battle_load(Battle_manager* battle, Screen* screen);
+void battle_update(Battle_manager* battle, Controller* controllers, Screen* screen);
 void battle_free(Battle_manager* battle);
 void battle_clock_count(int* clock, int* second);
 

@@ -3,11 +3,16 @@
 void init_graphics(Graphics* graphics) {
     SDL_Init (SDL_INIT_EVERYTHING);
 
-    graphics->window = SDL_CreateWindow(GAME_NAME,SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,SCREEN_WIDTH,SCREEN_HEIGHT, SDL_WINDOW_ALLOW_HIGHDPI);
+    graphics->screen = init_screen(1280, 720, 0);
+
+    graphics->window = SDL_CreateWindow(GAME_NAME,SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,
+            graphics->screen.SCREEN_WIDTH,graphics->screen.SCREEN_HEIGHT, SDL_WINDOW_ALLOW_HIGHDPI);
     graphics->renderer = SDL_CreateRenderer(graphics->window,-1,SDL_RENDERER_PRESENTVSYNC);
     SDL_SetRenderDrawColor(graphics->renderer, 20,20,20,255);
 
-    graphics->y_multiplier = (int)(SCREEN_HEIGHT/BASE_HEIGHT);
+    if (graphics->screen.fullscreen == 1) SDL_SetWindowFullscreen(graphics->window,SDL_WINDOW_FULLSCREEN);
+
+    graphics->y_multiplier = (int)(graphics->screen.SCREEN_HEIGHT/BASE_HEIGHT);
     graphics->x_multiplier = graphics->y_multiplier;
 
     graphics->rect.x = 0;
@@ -226,10 +231,10 @@ void background_render(Graphics* graphics, Background* backgrounds, Camera* came
         int tile_h = bg->sprite.height;
 
         int start_x = (camera->x / tile_w) - 1;
-        int end_x = ((camera->x + (int)(SCREEN_WIDTH / get_game_scale())) / tile_w) + 1;
+        int end_x = ((camera->x + (int)(graphics->screen.SCREEN_WIDTH / get_game_scale(&graphics->screen))) / tile_w) + 1;
 
         int start_y = (camera->y / tile_h) - 1;
-        int end_y = ((camera->y + (int)(SCREEN_HEIGHT / get_game_scale())) / tile_h) + 1;
+        int end_y = ((camera->y + (int)(graphics->screen.SCREEN_HEIGHT / get_game_scale(&graphics->screen))) / tile_h) + 1;
 
         for (int tx = start_x; tx <= end_x; ++tx) {
             for (int ty = start_y; ty <= end_y; ++ty) {
@@ -245,8 +250,8 @@ void background_render(Graphics* graphics, Background* backgrounds, Camera* came
 
 void gui_battle_render(Graphics* graphics, Battle_manager* battle) {
     // Score gui
-    tex_render(graphics, &graphics->score_gui, TEX_BATTLE_MODE_SCORE, -get_center_x(256),0);
-    int CLOCK_X = -get_center_x(256) + 10;
+    tex_render(graphics, &graphics->score_gui, TEX_BATTLE_MODE_SCORE, -get_center_x(&graphics->screen, 256),0);
+    int CLOCK_X = -get_center_x(&graphics->screen, 256) + 10;
 
     // CLOCK
     graphics->gui_symbols.frame_x = SY_CLOCK;
@@ -308,7 +313,15 @@ void gui_battle_render(Graphics* graphics, Battle_manager* battle) {
         }
     }
 
+}
 
+// Update screen size
+void update_window_size(Graphics* graphics) {
+
+    int new_width = graphics->screen.SCREEN_WIDTH;
+    int new_height = graphics->screen.SCREEN_HEIGHT;
+
+    SDL_SetWindowSize(graphics->window, new_width, new_height);
 }
 
 // Hit box draw

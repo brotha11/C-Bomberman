@@ -16,6 +16,7 @@
 #include "../pickups/powerup.h"
 #include "../game/game_constants.h"
 #include "../modes/battle/battle_mode_manager.h"
+#include "../rooms/screen_manager.h"
 #include "background.h"
 #include "sprite.h"
 
@@ -40,6 +41,7 @@ struct graphics {
     Sprite gui_symbols;
 
     Background backgrounds[MAX_BACKGROUND_COUNT];
+    Screen screen;
 
     float x_multiplier;
     float y_multiplier;
@@ -63,6 +65,7 @@ void pw_render(Graphics* graphics, Power_up** powers, int cam_x, int cam_y);
 void gui_battle_render(Graphics* graphics, Battle_manager* battle);
 void background_render(Graphics* graphics, Background* backgrounds, Camera* camera);
 void draw_hitbox(Graphics* graphics, int x, int y, int w, int h);
+void update_window_size(Graphics* graphics);
 
 void free_graphics(Graphics* graphics);
 

@@ -11,6 +11,9 @@ int catch_events() {
             if (event.key.keysym.sym == SDLK_ESCAPE) {
                 return EV_CLOSE_GAME;
             }
+            if (event.key.keysym.sym == SDLK_F11) {
+                return EV_FULLSCREEN;
+            }
         }
 
         // (Opcional) Detectar conexión/desconexión de controladores
