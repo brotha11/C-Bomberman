@@ -48,7 +48,7 @@ void p_update(Player* player, Controller* controller, Entity** head, Collision**
 
         // Facing
 
-        if (player->action != P_KICK || player->action != P_THROW) { // Dont update facing when kicking or throwing
+        if (player->action != P_KICK && player->action != P_THROW) { // Dont update facing when kicking or throwing
             if (player->base->hspeed != 0 && player->base->vspeed == 0) {
                 player->base->facing_y = 0;
                 player->base->facing_x = e_sign(player->base->hspeed);
@@ -84,7 +84,7 @@ void p_update(Player* player, Controller* controller, Entity** head, Collision**
         // Reduce action timer
         if (player->action_timer > 0) player->action_timer--;
 
-        if (player->action_timer == 0) {
+        if (player->action_timer <= 1) {
             switch(player->action) {
                 case P_KICK:
                 case P_THROW:
@@ -134,8 +134,10 @@ void p_update(Player* player, Controller* controller, Entity** head, Collision**
                     coll_x->kick_x = player->move_x;
 
                     // Set timer
-                    player->action = P_KICK;
-                    player->action_timer = ACTION_COOLDOWN;
+                    if (player->action != P_KICK) {
+                        player->action = P_KICK;
+                        player->action_timer = ACTION_COOLDOWN;
+                    }
                 }
             }
             if (coll_y) {
@@ -144,8 +146,10 @@ void p_update(Player* player, Controller* controller, Entity** head, Collision**
                     coll_y->kick_y = player->move_y;
 
                     // Set timer
-                    player->action = P_KICK;
-                    player->action_timer = ACTION_COOLDOWN;
+                    if (player->action != P_KICK) {
+                        player->action = P_KICK;
+                        player->action_timer = ACTION_COOLDOWN;
+                    }
                 }
             }
         }
@@ -219,8 +223,7 @@ void p_update(Player* player, Controller* controller, Entity** head, Collision**
             player->base->sprite.image_speed = (int)ANIM_SPEED / player->base->max_speed;
         }
 
-        player->base->sprite.frame_x_max = 4;
-
+        //player->base->sprite.frame_x_max = 4;
         player->base->sprite.y_off = (16-26);
 
         // Asign sprites
@@ -231,7 +234,7 @@ void p_update(Player* player, Controller* controller, Entity** head, Collision**
         else if (player->base->facing_x == 1) player->base->sprite.frame_y = P_RIGHT /*+ player->action * player->base->sprite.frame_x_max*/;
 
         // Action sprite
-        player->base->sprite.frame_x = player->action * player->base->sprite.frame_x_max;
+        player->base->sprite.frame_x = player->action;
 
     } else { // Dead
         if (player->burned) player->base->sprite.frame_y = P_BLOWN;

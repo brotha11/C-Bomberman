@@ -6,10 +6,11 @@ void add_bomb(Bomb** head, Collision** colls, Player* owner_bomb, Entity** e_hea
     Bomb* new_bomb = (Bomb*)malloc(sizeof(Bomb));
     
     add_collision(colls, col, row, BOMB_HB, BOMB_HB);
+    new_bomb->coll = *colls; // Apunta a la colisión recién creada
+    add_collision(colls, col+BOMB2_DIFF, row+BOMB2_DIFF, BOMB2_HB, BOMB2_HB);
+    new_bomb->coll2 = *colls; // Apunta a la colisión recién creada
 
     new_bomb->move = new_entity(e_head, col, row, 16, 16, BOMB_KICK_SPEED);
-
-    new_bomb->coll = *colls; // Apunta a la colisión recién creada
     new_bomb->x = col;
     new_bomb->y = row;
     new_bomb->blast_radius = blast;
@@ -71,6 +72,7 @@ void b_update(Bomb** head, Fire** fires, Collision** collision, Power_up** power
             if (current->move->last_x == current->move->x && current->kick_x != 0) {
                 current->kick_x = 0;
                 current->coll->x = current->x;
+                current->coll2->x = current->x+BOMB2_DIFF;
 
                 // Snap back into grid
                 int tile_x, tile_y;
@@ -83,6 +85,7 @@ void b_update(Bomb** head, Fire** fires, Collision** collision, Power_up** power
             else if (current->move->last_y == current->move->y && current->kick_y != 0) {
                 current->kick_y = 0;
                 current->coll->x = current->x;
+                current->coll2->x = current->x+BOMB2_DIFF;
 
                 // Snap back into grid
                 int tile_x, tile_y;
@@ -91,10 +94,15 @@ void b_update(Bomb** head, Fire** fires, Collision** collision, Power_up** power
                 current->x = tile_x;
                 current->y = tile_y;
             }
-            else current->coll->x = -512;
+            else {
+                current->coll->x = -512;
+                current->coll2->x = -512;
+            }
         } else {
             current->coll->x = current->x;
             current->coll->y = current->y;
+            current->coll2->x = current->x+BOMB2_DIFF;
+            current->coll2->y = current->y+BOMB2_DIFF;
             current->move->x = current->x;
             current->move->y = current->y;
         }
@@ -146,6 +154,11 @@ Bomb* coll_bomb(Bomb** head, int x, int y, int width, int height) {
             y + height > current->y && y < current->y + current->height) {  // Revisa si el personaje está dentro de la altura del bloque
             return current;  // Hay colisión
         }
+        // Verificamos si hay colisión entre la hitbox del personaje y el bloque
+        if (x + width > current->x+BOMB2_DIFF && x < current->x+BOMB2_DIFF + BOMB2_HB &&  // Revisa si el personaje está dentro del ancho del bloque
+            y + height > current->y+BOMB2_DIFF && y < current->y+BOMB2_DIFF + BOMB2_HB) {  // Revisa si el personaje está dentro de la altura del bloque
+            return current;  // Hay colisión
+        }
 
         current = current->next;
     }
@@ -162,18 +175,30 @@ Bomb* coll_bomb_ext(Bomb** head, int x, int y, int true_x, int true_y, int width
             current = current->next;
             continue;  
         }
-
         if (true_x + width > current->x && true_x < current->x + current->width &&  // Revisa si el personaje está dentro del ancho del bloque
             true_y + height > current->y && true_y < current->y + current->height) {
-                current = current->next;
-                continue;
+            //current = current->next;
+            //continue;
+        } else {
+            // Verificamos si hay colisión entre la hitbox del personaje y el bloque
+            if (x + width > current->x && x < current->x + current->width &&  // Revisa si el personaje está dentro del ancho del bloque
+                y + height > current->y && y < current->y + current->height) {  // Revisa si el personaje está dentro de la altura del bloque
+                return current;  // Hay colisión
             }
-
-        // Verificamos si hay colisión entre la hitbox del personaje y el bloque
-        if (x + width > current->x && x < current->x + current->width &&  // Revisa si el personaje está dentro del ancho del bloque
-            y + height > current->y && y < current->y + current->height) {  // Revisa si el personaje está dentro de la altura del bloque
-            return current;  // Hay colisión
         }
+
+        // Segunda verificación, ahora estructurada igual
+        if (true_x + width > current->x + BOMB2_DIFF && true_x < current->x + BOMB2_DIFF + BOMB2_HB && 
+            true_y + height > current->y + BOMB2_DIFF && true_y < current->y + BOMB2_DIFF + BOMB2_HB) {
+            //current = current->next;
+            //continue;
+        } else {
+            if (x + width > current->x + BOMB2_DIFF && x < current->x + BOMB2_DIFF + BOMB2_HB && 
+                y + height > current->y + BOMB2_DIFF && y < current->y + BOMB2_DIFF + BOMB2_HB) {
+                return current;  // Hay colisión
+            }
+        }
+
 
         current = current->next;
     }
@@ -191,6 +216,7 @@ void free_bomb(Bomb** head, Collision** head_coll, Bomb* bomb, Entity** e_head) 
         }
         free_entity(e_head, temp->move);
         free_single(head_coll, temp->coll);
+        free_single(head_coll, temp->coll2);
         free(temp); // free old head 
 
         return; 
@@ -215,6 +241,7 @@ void free_bomb(Bomb** head, Collision** head_coll, Bomb* bomb, Entity** e_head) 
     }
     free_entity(e_head, temp->move);
     free_single(head_coll, temp->coll);
+    free_single(head_coll, temp->coll2);
     free(temp); // Free memory 
 }
 
@@ -229,6 +256,7 @@ void free_all_bombs(Bomb** head, Collision** head_coll, Entity** e_head) {
         }
         free_entity(e_head, current->move);
         free_single(head_coll, current->coll);
+        free_single(head_coll, current->coll2);
         free(current);
         current = next;  // Mover al siguiente nodo
     }

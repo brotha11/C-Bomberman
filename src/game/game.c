@@ -122,6 +122,11 @@ void render(Game* game) {
 
         tex_render(&game->graphics, &order[p]->base->sprite, TEX_BOMBER_WHITE + order[p]->id, 
             order[p]->base->x + sh_x - c_x, order[p]->base->y + sh_y - c_y);
+
+        if (game->graphics.draw_hitboxes == 1) {
+            draw_hitbox(&game->graphics, order[p]->base->x - c_x, order[p]->base->y - c_y,
+                order[p]->base->width, order[p]->base->height);
+        }
     }
 
 

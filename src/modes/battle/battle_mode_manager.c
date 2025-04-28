@@ -106,10 +106,10 @@ void battle_load(Battle_manager* battle) {
                 battle->players[p].player_on = true;
                 battle->players_on[p] = 1;
            // }
+        }
 
-           if (p == 4) {
-            battle->players[p].com = true;
-           }
+        if (!battle->players[p].player_on) {
+            battle->players[p].base->x = battle->players[p].base->y = -512;
         }
     }
 }

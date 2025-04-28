@@ -3,7 +3,10 @@ setlocal EnableDelayedExpansion
 
 :: Due to how this .bat is made, if you modify a .h file, it is better to rebuild the program to avoid random errors.
 
-echo === C-Bomberman Build Script ===
+if not defined BUILD_SCRIPT_STARTED (
+    set BUILD_SCRIPT_STARTED=1
+    echo === C-Bomberman Build Script ===
+)
 
 :: Configuración
 set CC=gcc
@@ -20,6 +23,7 @@ if /i "%1"=="clean" goto clean
 if /i "%1"=="rebuild" goto rebuild
 if /i "%1"=="build" goto build
 if /i "%1"=="run" goto run
+if /i "%1"=="full" goto full
 
 echo Usage: %0 [build|clean|rebuild|run]
 exit /b 1
@@ -43,6 +47,11 @@ exit /b 0
 :run
 echo Running game...
 start "" "%NAME%"
+exit /b 0
+
+:full
+call %0 rebuild
+call %0 run
 exit /b 0
 
 :build

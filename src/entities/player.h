@@ -18,9 +18,9 @@ typedef enum PLAYER_SPRITE {
 
 typedef enum PLAYER_ACTION {
     P_NONE,
-    P_HOLD,
-    P_THROW,
-    P_KICK
+    P_HOLD = 4,
+    P_THROW = 8,
+    P_KICK = 10
 } PLAYER_ACTION;
 
 #define ANIM_SPEED 8
@@ -32,7 +32,7 @@ typedef enum PLAYER_ACTION {
 #define KILL_CELEBRATION 80
 
 #define BOMB_COOLDOWN 12
-#define ACTION_COOLDOWN 12
+#define ACTION_COOLDOWN 16
 
 struct player {
 

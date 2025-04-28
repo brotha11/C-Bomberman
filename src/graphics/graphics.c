@@ -15,6 +15,8 @@ void init_graphics(Graphics* graphics) {
     graphics->rect.w = 0;
     graphics->rect.h = 0;
 
+    graphics->draw_hitboxes = 0;
+
     // Backgrounds
     for (int i = 0; i < MAX_BACKGROUND_COUNT; ++i) {
         graphics->backgrounds[i] = new_bg(0, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -127,6 +129,14 @@ void b_render(Graphics* graphics, Bomb** bombs, int cam_x, int cam_y) {
     // Recorremos todos los bloques de colisión
     while (current != NULL) {
         tex_render(graphics, &current->sprite, TEX_BOMB, current->x - cam_x, current->y - cam_y);
+
+        if (graphics->draw_hitboxes == 1) {
+            draw_hitbox(graphics, current->coll->x - cam_x, current->coll->y - cam_y,
+                current->coll->width, current->coll->height);
+            draw_hitbox(graphics, current->coll2->x - cam_x, current->coll2->y - cam_y,
+                current->coll2->width, current->coll2->height);
+        }
+
         current = current->next;
     }
 }
@@ -141,6 +151,9 @@ void f_render(Graphics* graphics, Fire** fires, int cam_x, int cam_y) {
 
         if (current->visible) {
             tex_render(graphics, &current->sprite, TEX_FIRE, current->x - cam_x, current->y - cam_y);
+
+            if (graphics->draw_hitboxes == 1) draw_hitbox(graphics, current->x - cam_x, current->y - cam_y,
+                current->width, current->height);
         }
         current = current->next;
     }
@@ -177,6 +190,8 @@ void pw_render(Graphics* graphics, Power_up** powers, int cam_x, int cam_y) {
             } else {
                 tex_render(graphics, &current->sprite, TEX_ITEM_BURN, current->x - cam_x, current->y - cam_y);
             }
+            if (graphics->draw_hitboxes == 1) draw_hitbox(graphics, current->x - cam_x, current->y - cam_y,
+                current->width, current->height);
         }
 
         current = current->next;
@@ -294,6 +309,14 @@ void gui_battle_render(Graphics* graphics, Battle_manager* battle) {
     }
 
 
+}
+
+// Hit box draw
+void draw_hitbox(Graphics* graphics, int x, int y, int w, int h) {
+    SDL_SetRenderDrawColor(graphics->renderer, 255,255,255,255);
+
+    rect_resolution_fix(graphics, &graphics->rect, x, y, w, h);
+    SDL_RenderDrawRect(graphics->renderer, &graphics->rect);
 }
 
 // Fix size depending on the resolution of the game

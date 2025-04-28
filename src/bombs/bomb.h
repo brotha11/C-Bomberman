@@ -12,6 +12,8 @@
 #define BOMB_KICK_SPEED 2
 #define BOMB_TIMER 180
 #define BOMB_HB 16
+#define BOMB2_HB 10
+#define BOMB2_DIFF (BOMB_HB - BOMB2_HB)/2
 
 struct fire;
 typedef struct fire Fire;
@@ -21,6 +23,7 @@ typedef struct player Player;
 
 struct bomb {
     Collision* coll;
+    Collision* coll2;
     Entity* move;
     Player* owner;
 

@@ -44,6 +44,8 @@ struct graphics {
     float x_multiplier;
     float y_multiplier;
 
+    int draw_hitboxes;
+
 }; 
 typedef struct graphics Graphics;
 
@@ -60,6 +62,7 @@ void bri_render(Graphics* graphics, Brick** bricks, int cam_x, int cam_y);
 void pw_render(Graphics* graphics, Power_up** powers, int cam_x, int cam_y);
 void gui_battle_render(Graphics* graphics, Battle_manager* battle);
 void background_render(Graphics* graphics, Background* backgrounds, Camera* camera);
+void draw_hitbox(Graphics* graphics, int x, int y, int w, int h);
 
 void free_graphics(Graphics* graphics);
 

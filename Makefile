@@ -3,7 +3,7 @@
 # ==============================
 
 # Variables
-SRC_DIRS := SRC_DIRS := $(shell find src -type d)
+SRC_DIRS := $(shell find src -type d)
 SRC := $(foreach dir, $(SRC_DIRS), $(wildcard $(dir)/*.c))
 OBJ_DIR := obj
 OBJ := $(patsubst src/%.c, $(OBJ_DIR)/%.o, $(SRC))
