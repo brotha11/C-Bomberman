@@ -1,29 +1,34 @@
 #include "entity.h"
 
-Entity new_entity(int x, int y, int width, int height, float max) {
-    Entity new;
+Entity* new_entity(Entity** head, int x, int y, int width, int height, float max) {
+    Entity *new = (Entity*)malloc(sizeof(Entity));
 
-    new.alive = true;
-    new.x = x;
-    new.y = y;
-    new.last_x = x;
-    new.last_y = y;
+    new->alive = true;
+    new->x = x;
+    new->y = y;
+    new->last_x = x;
+    new->last_y = y;
 
-    new.width = width;
-    new.height = height;
-    new.facing_x = 0;
-    new.facing_y = 1;
+    new->width = width;
+    new->height = height;
+    new->facing_x = 0;
+    new->facing_y = 1;
 
-    new.slide_w = width / 4;
-    new.slide_h = height;
+    new->shake_x = new->shake_y = new->shake_timer = 0;
 
-    new.final_x = new.final_y = 0;
-    new.sub_x = new.sub_y = 0;
+    new->slide_w = width / 4;
+    new->slide_h = height;
 
-    new.hspeed = new.vspeed = 0;
-    new.max_speed = max;
+    new->final_x = new->final_y = 0;
+    new->sub_x = new->sub_y = 0;
 
-    new.sprite = new_sprite(width,height);
+    new->hspeed = new->vspeed = 0;
+    new->max_speed = max;
+
+    new->sprite = new_sprite(width,height);
+    
+    new->next = *head;
+    *head = new;
 
     return new;
 }
@@ -52,7 +57,7 @@ void e_move(Entity* entity, Collision** collision) {
     entity->last_y = entity->y;
 
     //float slide_factor = 2.75f;
-    int divide = 24;
+    int divide = 512;
     int slide_factor = (entity->height - abs(entity->height - entity->height/divide) / 2);
 
     entity->sub_x += entity->hspeed;
@@ -120,7 +125,7 @@ void e_move(Entity* entity, Collision** collision) {
 
 }
 
-void e_move_all(Entity* entity, Collision** collision, Power_up** powers) {
+void e_move_all(Entity* entity, Collision** collision, Power_up** powers, Entity** entities) {
     entity->last_x = entity->x;
     entity->last_y = entity->y;
 
@@ -133,7 +138,7 @@ void e_move_all(Entity* entity, Collision** collision, Power_up** powers) {
     if (entity->final_x == 0) entity->is_colliding_x = 0;
 
     for (int i = 0; i < abs(entity->final_x); ++i) {
-        if(coll_meeting_ext(collision, entity->x + e_sign(entity->final_x), 
+        if (coll_meeting_ext(collision, entity->x + e_sign(entity->final_x), 
         entity->y, entity->x, entity->y, entity->width, entity->height)) {
             coll_x = 1;
         }
@@ -141,6 +146,12 @@ void e_move_all(Entity* entity, Collision** collision, Power_up** powers) {
         entity->y, entity->width, entity->height));
         if (pw) {
             free_powerup(powers, pw);
+        }
+
+        // Other entities
+        if (coll_entity_ext(entities, entity, entity->x + e_sign(entity->final_x), 
+        entity->y, entity->x, entity->y, entity->width, entity->height)) {
+            coll_x = 1;
         }
 
         if (coll_x == 0) {
@@ -171,11 +182,105 @@ void e_move_all(Entity* entity, Collision** collision, Power_up** powers) {
             free_powerup(powers, pw);
         }
 
+        // Other entities
+        if (coll_entity_ext(entities, entity, entity->x, entity->y + e_sign(entity->final_y), 
+            entity->x, entity->y, entity->width, entity->height)) {
+            coll_y = 1;
+        }
+
         if (coll_y == 0) {
             entity->y += e_sign(entity->vspeed);
             entity->is_colliding_y = 0;
         } else break;
     }
+}
+
+Entity* coll_entity_ext(Entity** head, Entity* self, int x, int y, int true_x, int true_y, int width, int height) {
+    Entity* current = *head;
+    
+    // Recorremos todos los bloques de colisión
+    while (current != NULL) {
+
+        if (current->x == -1234) {
+            current = current->next;
+            continue;  
+        }
+
+        if (current == self) {
+            current = current->next;
+            continue;     
+        }
+
+        if (true_x + width > current->x && true_x < current->x + current->width &&  // Revisa si el personaje está dentro del ancho del bloque
+            true_y + height > current->y && true_y < current->y + current->height) {
+                current = current->next;
+                continue;
+            }
+
+        // Verificamos si hay colisión entre la hitbox del personaje y el bloque
+        if (x + width > current->x && x < current->x + current->width &&  // Revisa si el personaje está dentro del ancho del bloque
+            y + height > current->y && y < current->y + current->height) {  // Revisa si el personaje está dentro de la altura del bloque
+            return current;  // Hay colisión
+        }
+
+        current = current->next;
+    }
+    return NULL;  // No hay colisión
+}
+
+void e_shake(int* sh_x, int* sh_y, int* timer, int shake_oft, int dist) {
+    if (*timer > 0) {
+        if ((*timer) % shake_oft == 0) {
+            srand(clock() + *sh_x + *sh_y);
+            *sh_x = (int) round(rand()%(dist*2)+1) - dist;
+
+            srand(clock() + *sh_x + *sh_y);
+            *sh_y = (int) round(rand()%5) - 2;
+        }
+        (*timer)--;
+    } else {
+        *sh_x = *sh_y = 0;
+    }
+
+}
+
+void free_entity(Entity** head, Entity* ent) {
+    Entity *temp = *head, *prev = NULL;
+  
+    if (temp != NULL && temp == ent) { 
+        *head = temp->next; // Changed head 
+        free(temp); // free old head 
+        return; 
+    } 
+  
+    // Search for the key to be deleted, keep track of the 
+    // previous node as we need to change 'prev->next' 
+    while (temp != NULL && temp != ent) { 
+        prev = temp; 
+        temp = temp->next; 
+    } 
+  
+    // If key was not present in linked list 
+    if (temp == NULL) 
+        return; 
+  
+    // Unlink the node from linked list 
+    prev->next = temp->next; 
+  
+    free(temp); // Free memory 
+}
+
+void free_all_entities(Entity** head) {
+    Entity* current = *head;
+    Entity* next;
+
+    while (current != NULL) {
+        next = current->next;  // Guardar referencia al siguiente nodo
+        free(current);
+        current = next;  // Mover al siguiente nodo
+    }
+
+    *head = NULL;  // Evitar accesos a memoria liberada
 }
 
 int e_sign(int x) {

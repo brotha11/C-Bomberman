@@ -97,38 +97,12 @@ void init_graphics(Graphics* graphics) {
     graphics->gui_symbols = new_sprite(14,14);
 }
 
-bool graphics_event(Graphics* graphics) {
-    SDL_Event event;
-    while (SDL_PollEvent(&event)) {
-
-        graphics->window_event = event;  // Si lo necesitás guardar
-
-        if (event.type == SDL_QUIT) {
-            return false;
-        }
-        else if (event.type == SDL_KEYDOWN) {
-            if (event.key.keysym.sym == SDLK_ESCAPE) {
-                return false;
-            }
-        }
-
-        // (Opcional) Detectar conexión/desconexión de controladores
-        if (event.type == SDL_CONTROLLERDEVICEADDED)
-            printf("Gamepad agregado: %d\n", event.cdevice.which);
-        if (event.type == SDL_CONTROLLERDEVICEREMOVED)
-            printf("Gamepad removido: %d\n", event.cdevice.which);
-    }
-
-    return true;
-}
-
-
 void tex_render(Graphics* graphics, Sprite* sprite, int spr, int x, int y) {
 
     if (!sprite) return;
 
     rect_set(graphics, &sprite->frame_rect, 
-            sprite->frame_x*graphics->sprites[spr].spr_width, 
+            (sprite->frame_x + sprite->frame)*graphics->sprites[spr].spr_width, 
                     sprite->frame_y*graphics->sprites[spr].spr_height, 
                             graphics->sprites[spr].spr_width, graphics->sprites[spr].spr_height);
     rect_resolution_fix(graphics, &graphics->rect, x + sprite->x_off, y + sprite->y_off, sprite->frame_rect.w, sprite->frame_rect.h);
@@ -228,25 +202,31 @@ void coll_render(Graphics* graphics, Collision* collision) {
     SDL_SetRenderDrawColor(graphics->renderer, 0,0,0,255);
 }
 
-void background_render(Graphics* graphics, Background* backgrounds) {
+void background_render(Graphics* graphics, Background* backgrounds, Camera* camera) {
     for (int i = 0; i < MAX_BACKGROUND_COUNT; ++i) {
         Background* bg = &backgrounds[i];
+        if (!bg->used) continue;
 
-        if (bg->used == 0) continue;
+        int tile_w = bg->sprite.width;
+        int tile_h = bg->sprite.height;
 
-        int scale = (int)(SCREEN_HEIGHT/BASE_HEIGHT);
-        int extra_x = 3;
-        int repetitions_x = (int)((SCREEN_WIDTH / scale) / bg->sprite.width) + extra_x;
-        int repetitions_y = (int)((SCREEN_HEIGHT / scale) / bg->sprite.height) + extra_x;
+        int start_x = (camera->x / tile_w) - 1;
+        int end_x = ((camera->x + (int)(SCREEN_WIDTH / get_game_scale())) / tile_w) + 1;
 
-        for (int j = -extra_x; j < repetitions_x; ++j) {
-            for (int k = -extra_x; k < repetitions_y; ++k)
-                tex_render(graphics, &bg->sprite, TEX_BG_GRASS_00 + i,
-                    bg->x + j * bg->sprite.width, 
-                    bg->y + k * bg->sprite.height);
+        int start_y = (camera->y / tile_h) - 1;
+        int end_y = ((camera->y + (int)(SCREEN_HEIGHT / get_game_scale())) / tile_h) + 1;
+
+        for (int tx = start_x; tx <= end_x; ++tx) {
+            for (int ty = start_y; ty <= end_y; ++ty) {
+                int draw_x = tx * tile_w - camera->x;
+                int draw_y = ty * tile_h - camera->y;
+
+                tex_render(graphics, &bg->sprite, TEX_BG_GRASS_00 + i, draw_x, draw_y);
+            }
         }
     }
 }
+
 
 void gui_battle_render(Graphics* graphics, Battle_manager* battle) {
     // Score gui
@@ -255,7 +235,7 @@ void gui_battle_render(Graphics* graphics, Battle_manager* battle) {
 
     // CLOCK
     graphics->gui_symbols.frame_x = SY_CLOCK;
-    tex_render(graphics, &graphics->gui_symbols, TEX_GUI_SYMBOLS, CLOCK_X, 4); 
+        tex_render(graphics, &graphics->gui_symbols, TEX_GUI_SYMBOLS, CLOCK_X, 4); 
     // Minutes digits
     graphics->gui_symbols.frame_x = (int)(battle->battle_clock/60);
     tex_render(graphics, &graphics->gui_symbols, TEX_GUI_SYMBOLS, CLOCK_X+14, 4);
@@ -285,7 +265,7 @@ void gui_battle_render(Graphics* graphics, Battle_manager* battle) {
             int spr = SY_BOMBER_W;
 
             // DEAD
-            if (battle->players[i].base.alive == false) {
+            if (battle->players[i].base->alive == false) {
                 if (battle->players[i].death_timer <= DEATH_TIMER_MAX/10) spr = SY_DBOMB_W + i;
                 else {
                     int frame = (int)((DEATH_TIMER_MAX - battle->players[i].death_timer) / (DEATH_TIMER_MAX/8));

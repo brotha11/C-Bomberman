@@ -21,7 +21,7 @@ typedef struct player Player;
 
 struct bomb {
     Collision* coll;
-    Entity move;
+    Entity* move;
     Player* owner;
 
     int x,y;
@@ -38,13 +38,13 @@ struct bomb {
 };
 typedef struct bomb Bomb;
 
-void add_bomb(Bomb** head, Collision** colls, Player* owner_bomb, int col, int row, int blast);
+void add_bomb(Bomb** head, Collision** colls, Player* owner_bomb, Entity** e_head, int col, int row, int blast);
 Bomb* coll_bomb(Bomb** head, int x, int y, int width, int height);
 Bomb* coll_bomb_ext(Bomb** head, int x, int y, int true_x, int true_y, int width, int height);
-void free_bomb(Bomb** head, Collision** head_coll, Bomb* bomb);
-void free_all_bombs(Bomb** head, Collision** head_coll);
+void free_bomb(Bomb** head, Collision** head_coll, Bomb* bomb, Entity** e_head);
+void free_all_bombs(Bomb** head, Collision** head_coll, Entity** e_head);
 
-void b_update(Bomb** head, Fire** fire, Collision** collision, Power_up** powers);
-void b_explode(Bomb** head, Bomb* bomb, Fire** fire, Collision** collision, Power_up** powers);
+void b_update(Bomb** head, Fire** fire, Collision** collision, Power_up** powers, Entity** e_head);
+void b_explode(Bomb** head, Bomb* bomb, Fire** fire, Collision** collision, Power_up** powers, Entity** e_head);
 
 #endif

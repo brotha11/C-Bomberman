@@ -48,7 +48,6 @@ struct graphics {
 typedef struct graphics Graphics;
 
 void init_graphics(Graphics* graphics);
-bool graphics_event(Graphics* graphics);
 
 // Object draw
 void tex_render(Graphics* graphics, Sprite* sprite, int spr, int x, int y);
@@ -60,7 +59,7 @@ void f_render(Graphics* graphics, Fire** fires, int cam_x, int cam_y);
 void bri_render(Graphics* graphics, Brick** bricks, int cam_x, int cam_y);
 void pw_render(Graphics* graphics, Power_up** powers, int cam_x, int cam_y);
 void gui_battle_render(Graphics* graphics, Battle_manager* battle);
-void background_render(Graphics* graphics, Background* backgrounds);
+void background_render(Graphics* graphics, Background* backgrounds, Camera* camera);
 
 void free_graphics(Graphics* graphics);
 

@@ -9,7 +9,7 @@ This is an open-source Bomberman game I'm developing to learn more about the C p
 
 This project uses *gcc* to compile the project, make sure it's installed in your machine in order to use the provided tools.
 
-#### Using Make (Linux and Windows with Make installed)
+#### Using Make (Linux)
 This program can be compiled using the provided Makefile.
 
 1. **Install SDL2 (on Ubuntu/Debian):**  
@@ -31,21 +31,21 @@ Once SDL2 is installed, run the following command to compile the program using t
 
 #### Using .bat file (Windows)
 
-If you don't have *Make* on your Windows machine, you can use the provided **build_w.bat** file to compile the project.
+On your Windows machine, you can use the provided **build.bat** file to compile the project.
 
-1. **Check files**
+1. **Check files:**
 For Windows builds, make sure that the `include`, `lib` folders, and the dll files: *SDL2.dll*, *SDL2_image.dll* and *SDL2_mixer.dll* are present in the root folder.
 
 2. **Compile the game:**
 You can put the following command in a terminal to execute the .bat file:
 
     ~~~
-    ./build_w.bat
+    ./build.bat
     ~~~  
     This will build the project for your Windows machine.
 
 Aditionally, there is an option present in the .bat file to run the game after a succesfull compilation. 
-This option is **disabled** by default. To enable it, simply change the following line in `build_w.bat`:
+This option is **disabled** by default. To enable it, simply change the following line in `build.bat`:
 
   ~~~
   :: Execute game after compiling

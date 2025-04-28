@@ -89,6 +89,7 @@ typedef struct sprite {
     SDL_Rect frame_rect;
 
     int image_speed, image_change;
+    int frame;
     int frame_x, frame_y;
     int width, height;
 

@@ -15,10 +15,11 @@ void get_tile_position(int* tile_x, int* tile_y, int x, int y, int w, int h) {
 }
 
 int get_center_x(int width) {
-    int scale = (int)(SCREEN_HEIGHT/BASE_HEIGHT);
-    return (width/2) - (SCREEN_WIDTH / scale) / 2;
+    return (width/2) - (SCREEN_WIDTH / get_game_scale()) / 2;
 }
 int get_center_y(int height) {
-    int scale = (int)(SCREEN_HEIGHT/BASE_HEIGHT);
-    return (height/2) - (SCREEN_HEIGHT / scale) / 2;
+    return (height/2) - (SCREEN_HEIGHT / get_game_scale()) / 2;
+}
+int get_game_scale() {
+    return (int)(SCREEN_HEIGHT/BASE_HEIGHT);
 }

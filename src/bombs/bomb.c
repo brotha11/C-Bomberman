@@ -2,12 +2,12 @@
 #include "fire.h"
 #include "../entities/player.h"
 
-void add_bomb(Bomb** head, Collision** colls, Player* owner_bomb, int col, int row, int blast) {
+void add_bomb(Bomb** head, Collision** colls, Player* owner_bomb, Entity** e_head, int col, int row, int blast) {
     Bomb* new_bomb = (Bomb*)malloc(sizeof(Bomb));
     
     add_collision(colls, col, row, BOMB_HB, BOMB_HB);
 
-    new_bomb->move = new_entity(col,row,16,16,BOMB_KICK_SPEED);
+    new_bomb->move = new_entity(e_head, col, row, 16, 16, BOMB_KICK_SPEED);
 
     new_bomb->coll = *colls; // Apunta a la colisión recién creada
     new_bomb->x = col;
@@ -37,7 +37,7 @@ void add_bomb(Bomb** head, Collision** colls, Player* owner_bomb, int col, int r
     *head = new_bomb;
 }
 
-void b_update(Bomb** head, Fire** fires, Collision** collision, Power_up** powers) {
+void b_update(Bomb** head, Fire** fires, Collision** collision, Power_up** powers, Entity** e_head) {
     Bomb* current = *head;
     Bomb* next_bomb = current;
 
@@ -55,20 +55,20 @@ void b_update(Bomb** head, Fire** fires, Collision** collision, Power_up** power
         //current->y_offset = base_y%16;
 
         // Kicked
-        if (current->move.hspeed + current->move.vspeed == 0 && current->kick_x + current->kick_y != 0) {
+        if (current->move->hspeed + current->move->vspeed == 0 && current->kick_x + current->kick_y != 0) {
             play_sound(SFX_KICK);
         }
 
-        current->move.hspeed = BOMB_KICK_SPEED * current->kick_x;
-        current->move.vspeed = BOMB_KICK_SPEED * current->kick_y;
+        current->move->hspeed = BOMB_KICK_SPEED * current->kick_x;
+        current->move->vspeed = BOMB_KICK_SPEED * current->kick_y;
 
         if (current->kick_x != 0 || current->kick_y != 0) {
-            e_move_all(&current->move, collision, powers);
+            e_move_all(current->move, collision, powers, e_head);
 
-            current->x = current->move.x;
-            current->y = current->move.y;
+            current->x = current->move->x;
+            current->y = current->move->y;
 
-            if (current->move.last_x == current->move.x && current->kick_x != 0) {
+            if (current->move->last_x == current->move->x && current->kick_x != 0) {
                 current->kick_x = 0;
                 current->coll->x = current->x;
 
@@ -80,7 +80,7 @@ void b_update(Bomb** head, Fire** fires, Collision** collision, Power_up** power
                 current->y = tile_y;
 
             }
-            else if (current->move.last_y == current->move.y && current->kick_y != 0) {
+            else if (current->move->last_y == current->move->y && current->kick_y != 0) {
                 current->kick_y = 0;
                 current->coll->x = current->x;
 
@@ -95,8 +95,8 @@ void b_update(Bomb** head, Fire** fires, Collision** collision, Power_up** power
         } else {
             current->coll->x = current->x;
             current->coll->y = current->y;
-            current->move.x = current->x;
-            current->move.y = current->y;
+            current->move->x = current->x;
+            current->move->y = current->y;
         }
 
         // Animation
@@ -104,7 +104,7 @@ void b_update(Bomb** head, Fire** fires, Collision** collision, Power_up** power
 
         if(current->timer != 0) current->timer--;
         else {
-            b_explode(head, current, fires, collision, powers);
+            b_explode(head, current, fires, collision, powers, e_head);
             current = next_bomb;
         }
 
@@ -112,7 +112,7 @@ void b_update(Bomb** head, Fire** fires, Collision** collision, Power_up** power
     }
 }
 
-void b_explode(Bomb** head, Bomb* bomb, Fire** fires, Collision** collision, Power_up** powers) {
+void b_explode(Bomb** head, Bomb* bomb, Fire** fires, Collision** collision, Power_up** powers, Entity** e_head) {
 
     int tile_x, tile_y;
     get_tile_position(&tile_x, &tile_y, bomb->x, bomb->y, 16, 16);
@@ -127,7 +127,7 @@ void b_explode(Bomb** head, Bomb* bomb, Fire** fires, Collision** collision, Pow
 
     play_sound(SFX_BLOW_UP_R);
 
-    free_bomb(head, collision, bomb);
+    free_bomb(head, collision, bomb, e_head);
 }
 
 Bomb* coll_bomb(Bomb** head, int x, int y, int width, int height) {
@@ -180,7 +180,7 @@ Bomb* coll_bomb_ext(Bomb** head, int x, int y, int true_x, int true_y, int width
     return NULL;  // No hay colisión
 }
 
-void free_bomb(Bomb** head, Collision** head_coll, Bomb* bomb) {
+void free_bomb(Bomb** head, Collision** head_coll, Bomb* bomb, Entity** e_head) {
     Bomb *temp = *head, *prev = NULL;
   
     if (temp != NULL && temp == bomb) { 
@@ -189,6 +189,7 @@ void free_bomb(Bomb** head, Collision** head_coll, Bomb* bomb) {
         if (temp->x != -1234) {
             if (temp->owner) temp->owner->bombs_placed--;
         }
+        free_entity(e_head, temp->move);
         free_single(head_coll, temp->coll);
         free(temp); // free old head 
 
@@ -212,11 +213,12 @@ void free_bomb(Bomb** head, Collision** head_coll, Bomb* bomb) {
     if (temp->x != -1234) {
         if (temp->owner) temp->owner->bombs_placed--;
     }
+    free_entity(e_head, temp->move);
     free_single(head_coll, temp->coll);
     free(temp); // Free memory 
 }
 
-void free_all_bombs(Bomb** head, Collision** head_coll) {
+void free_all_bombs(Bomb** head, Collision** head_coll, Entity** e_head) {
     Bomb* current = *head;
     Bomb* next;
 
@@ -225,6 +227,7 @@ void free_all_bombs(Bomb** head, Collision** head_coll) {
         if (current->x != -1234) {
             if (current->owner) current->owner->bombs_placed--;
         }
+        free_entity(e_head, current->move);
         free_single(head_coll, current->coll);
         free(current);
         current = next;  // Mover al siguiente nodo

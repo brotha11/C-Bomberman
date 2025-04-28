@@ -11,6 +11,9 @@
 *.so
 *.d
 
+# Archivo con objetos compilados
+obj
+
 # Misc.
 *.log
 *.tmp

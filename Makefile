@@ -1,36 +1,39 @@
-# Variables comunes
-SRC :=  $(wildcard src/audio/*.c) \
-        $(wildcard src/blocks/*.c) \
-        $(wildcard src/bombs/*.c) \
-        $(wildcard src/entities/*.c) \
-        $(wildcard src/game/*.c) \
-        $(wildcard src/graphics/*.c) \
-        $(wildcard src/input/*.c) \
-        $(wildcard src/modes/**/*.c) \
-        $(wildcard src/pickups/*.c) \
-        $(wildcard src/rooms/*.c)
+# ==============================
+# C-Bomberman Makefile (Linux only)
+# ==============================
 
-LIBS = -lSDL2main -lSDL2 -lSDL2_image -lSDL2_mixer
-CC = gcc
-CFLAGS = -Iinclude -Llib
-NAME = C-Bomberman
+# Variables
+SRC_DIRS := SRC_DIRS := $(shell find src -type d)
+SRC := $(foreach dir, $(SRC_DIRS), $(wildcard $(dir)/*.c))
+OBJ_DIR := obj
+OBJ := $(patsubst src/%.c, $(OBJ_DIR)/%.o, $(SRC))
 
-all: w
+NAME := C-Bomberman
+CC := gcc
+CFLAGS := -Iinclude -Llib
+LIBS := -lSDL2main -lSDL2 -lSDL2_image -lSDL2_mixer
 
-# Compile for Windows
-w: 
-	$(CC) $(CFLAGS) -o $(NAME) $(SRC) -lmingw32 $(LIBS)
+# Opciones
+all: l
 
-# Compile for Linux
-l:
-	$(CC) -o $(NAME) $(SRC) $(LIBS) -lm
+# Crear carpeta obj/ si no existe
+$(OBJ_DIR)/%.o: src/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
 
-gdb:
-	$(CC) -g $(CFLAGS) -o $(NAME) $(SRC) -lmingw32 $(LIBS)
+# Compilar para Linux
+l: $(OBJ)
+	$(CC) -o $(NAME) $(OBJ) $(LIBS) -lm
 
-# Execute
+# Ejecutar
 run:
 	./$(NAME)
 
-# Declare rules
-.PHONY: w l r gdb all
+# Limpiar
+clean:
+	rm -rf $(OBJ_DIR) $(NAME)
+
+cleanobj:
+	rm -rf $(OBJ_DIR)
+
+.PHONY: all l run clean cleanobj

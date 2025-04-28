@@ -21,6 +21,34 @@ void init_game(Game* game) {
     start_room(game);
 }
 
+void run_game(Game* game) {
+    while (game->game_running) {
+
+        update(game);
+        render(game);
+       
+        int event = catch_events();
+        switch(event) {
+            case EV_CLOSE_GAME: 
+                game->game_running = false; 
+                break;
+            case EV_GAMEPAD_DISC:
+            case EV_GAMEPAD_CON: 
+                set_joys(game->controllers, game->battle.players_on); 
+                assign_inputs(game->controllers, game->battle.players_on, game->main_profile, 
+                    game->type0_profile, game->type1_profile, game->nouse_profile);
+                break;
+        }
+    }
+}
+
+void free_game(Game* game) {
+    free_graphics(&game->graphics);
+    battle_free(&game->battle);
+    sound_exit();
+    input_exit(game->controllers);
+}
+
 void update(Game* game) {
     battle_update(&game->battle, game->controllers);
     bg_update(game->graphics.backgrounds);
@@ -55,22 +83,47 @@ void render(Game* game) {
     int c_y = r_cam->y;
 
     // Background
-    background_render(&game->graphics, game->graphics.backgrounds);
+    background_render(&game->graphics, game->graphics.backgrounds, r_cam);
 
     // Map
-    tex_render(&game->graphics, &game->graphics.ground, TEX_MAP_01, 8 - c_x,0 - c_y);
+    tex_render(&game->graphics, &game->graphics.ground, TEX_MAP_01, 8 - c_x, 0 - c_y);
 
     f_render(&game->graphics, r_fires, c_x, c_y);
     bri_render(&game->graphics, r_bricks, c_x, c_y);
     b_render(&game->graphics, r_bombs, c_x, c_y);
     pw_render(&game->graphics, r_pw, c_x, c_y);
 
-    for (int p = 0; p < MAX_BATTLE_PLAYERS; ++p) {
-        if (!r_players[p].player_on) continue;
 
-        tex_render(&game->graphics, &r_players[p].base.sprite, TEX_BOMBER_WHITE + r_players[p].id, 
-            r_players[p].base.x - c_x, r_players[p].base.y - c_y);
+    // Players
+    Player* order[MAX_BATTLE_PLAYERS];
+    int ordered[MAX_BATTLE_PLAYERS] = {0};
+
+    for (int p = 0; p < MAX_BATTLE_PLAYERS; ++p) {
+        int best = -1;
+        for (int o = 0; o < MAX_BATTLE_PLAYERS; ++o) {
+            if (!r_players[o].player_on || ordered[o]) continue;
+            if (best == -1 || r_players[o].base->y < r_players[best].base->y) {
+                best = o;
+            }
+        }
+        if (best != -1) {
+            order[p] = &r_players[best];
+            ordered[best] = 1;
+        } else {
+            order[p] = NULL; // No hay jugador disponible
+        }
     }
+
+    // Render
+    for (int p = 0; p < MAX_BATTLE_PLAYERS; ++p) {
+        if (order[p] == NULL || !order[p]->player_on) continue;
+        int sh_x = order[p]->base->shake_x;
+        int sh_y = order[p]->base->shake_y;
+
+        tex_render(&game->graphics, &order[p]->base->sprite, TEX_BOMBER_WHITE + order[p]->id, 
+            order[p]->base->x + sh_x - c_x, order[p]->base->y + sh_y - c_y);
+    }
+
 
     ////
     //  GUI
@@ -80,32 +133,4 @@ void render(Game* game) {
 
 
     SDL_RenderPresent(game->graphics.renderer);
-}
-
-void run_game(Game* game) {
-    while (game->game_running) {
-
-        update(game);
-        render(game);
-       
-        int event = catch_events();
-        switch(event) {
-            case EV_CLOSE_GAME: 
-                game->game_running = false; 
-                break;
-            case EV_GAMEPAD_DISC:
-            case EV_GAMEPAD_CON: 
-                set_joys(game->controllers, game->battle.players_on); 
-                assign_inputs(game->controllers, game->battle.players_on, game->main_profile, 
-                    game->type0_profile, game->type1_profile, game->nouse_profile);
-                break;
-        }
-    }
-}
-
-void free_game(Game* game) {
-    free_graphics(&game->graphics);
-    battle_free(&game->battle);
-    sound_exit();
-    input_exit(game->controllers);
 }

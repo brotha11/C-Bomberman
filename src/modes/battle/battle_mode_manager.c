@@ -6,6 +6,7 @@ void battle_init(Battle_manager* battle) {
     battle->collision = NULL;
     battle->fires = NULL;
     battle->power_ups = NULL;
+    battle->entities = NULL;
 
     battle->current_map = 0;
     battle->win_goal = 0;
@@ -98,13 +99,17 @@ void battle_load(Battle_manager* battle) {
                 break;
         }
 
-        battle->players[p] = new_player(s_x-16 ,s_y-16,16,16,1,p);
+        battle->players[p] = new_player(&battle->entities, s_x-16 ,s_y-16,16,16,1,p);
 
-        if (p < 5) {
+        if (p < 2) {
             //if (p != 0) {
                 battle->players[p].player_on = true;
                 battle->players_on[p] = 1;
            // }
+
+           if (p == 4) {
+            battle->players[p].com = true;
+           }
         }
     }
 }
@@ -128,15 +133,15 @@ void battle_update(Battle_manager* battle, Controller* controllers) {
         }
         check_inputs(&controllers[gc]);
         
-        p_update(&battle->players[p], &controllers[gc], &battle->collision, 
+        p_update(&battle->players[p], &controllers[gc], &battle->entities, &battle->collision,
             &battle->bombs, &battle->fires, &battle->power_ups);
 
 
         gc++;
-        if (battle->players[p].base.alive == false && battle->players[p].death_timer == 0) alive_players--;
+        if (battle->players[p].base->alive == false && battle->players[p].death_timer == 0) alive_players--;
     }
 
-    b_update(&battle->bombs, &battle->fires, &battle->collision, &battle->power_ups);
+    b_update(&battle->bombs, &battle->fires, &battle->collision, &battle->power_ups, &battle->entities);
     f_update(&battle->fires, &battle->bombs);
     bri_update(&battle->bricks, &battle->fires, &battle->collision, &battle->power_ups);
     pw_update(&battle->power_ups, &battle->fires);
@@ -144,7 +149,7 @@ void battle_update(Battle_manager* battle, Controller* controllers) {
 
     if (alive_players <= 1) {
         for (int p = 0; p < MAX_BATTLE_PLAYERS; ++p) {
-            if (battle->players[p].base.alive == true) {
+            if (battle->players[p].base->alive == true) {
                 battle->players_wins[p]++;
             }
         }
@@ -171,7 +176,8 @@ void battle_clock_count(int* clock, int* second) {
 void battle_free(Battle_manager* battle) {
     free_all_bricks(&battle->bricks, &battle->collision);
     free_collisions(&battle->collision);
-    free_all_bombs(&battle->bombs, &battle->collision);
+    free_all_bombs(&battle->bombs, &battle->collision, &battle->entities);
     free_all_fires(&battle->fires);
     free_all_powerups(&battle->power_ups);
+    free_all_entities(&battle->entities);
 }

@@ -31,6 +31,8 @@ typedef struct battle_manager {
     Brick* bricks;
     Power_up* power_ups;
     Collision* collision;
+    Entity* entities;
+    
     Camera camera;
 
     int battle_time;
