@@ -32,7 +32,7 @@ void battle_selection(Battle_manager* battle) {
 }
 
 void battle_load(Battle_manager* battle, Screen* screen) {
-    battle->camera = new_camera(get_center_x(screen, 256) + 8, get_center_y(screen, 224), BASE_WIDTH, BASE_HEIGHT, 0.25f, CAM_STOP);
+    battle->camera = new_camera(get_center_x(screen, 256) + 8, get_center_y(screen, 224), BASE_WIDTH, BASE_HEIGHT, 0.25f, CAM_FOLLOW);
 
     int base_x = 48;
     int base_y = 48;
@@ -115,6 +115,10 @@ void battle_load(Battle_manager* battle, Screen* screen) {
 }
 
 void battle_update(Battle_manager* battle, Controller* controllers, Screen* screen) {
+
+    battle->camera.follow_x = get_center_x(screen, 256) + 8;
+    battle->camera.follow_y = get_center_y(screen, 224);
+
     int alive_players = MAX_BATTLE_PLAYERS;
 
     battle_clock_count(&battle->battle_clock, &battle->battle_tick);

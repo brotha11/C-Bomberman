@@ -10,10 +10,13 @@ Screen init_screen(int W, int H, int F) {
 }
 
 void set_screen_size(Screen* screen, int W, int H, int F) {
-    screen->SCREEN_HEIGHT = H;
-    screen->SCREEN_WIDTH = W;
-    screen->fullscreen = F;
-    screen->update_size = 1;
+    screen->SCREEN_HEIGHT = screen->window_height = H;
+    screen->SCREEN_WIDTH = screen->window_width = W;
+    
+    if (F == 1) {
+        screen->fullscreen = !screen->fullscreen;
+    }
+    //screen->update_size = 1;
 }
 
 int get_center_x(Screen* screen, int width) {

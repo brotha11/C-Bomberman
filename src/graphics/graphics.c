@@ -318,9 +318,25 @@ void gui_battle_render(Graphics* graphics, Battle_manager* battle) {
 // Update screen size
 void update_window_size(Graphics* graphics) {
 
-    int new_width = graphics->screen.SCREEN_WIDTH;
-    int new_height = graphics->screen.SCREEN_HEIGHT;
+    int new_width = graphics->screen.window_width;
+    int new_height = graphics->screen.window_height;
 
+    if (graphics->screen.fullscreen == 1) {
+        SDL_Rect display;
+        SDL_GetDisplayBounds(0, &display);
+
+        new_height = graphics->screen.SCREEN_HEIGHT = display.h;
+        new_width = graphics->screen.SCREEN_WIDTH = display.w;
+
+        printf("W: %i, H: %i", display.w,  display.h);
+
+        SDL_SetWindowFullscreen(graphics->window,SDL_WINDOW_FULLSCREEN);
+    } else {
+        SDL_SetWindowFullscreen(graphics->window,0);
+    }
+
+    graphics->y_multiplier = (int)(graphics->screen.SCREEN_HEIGHT/BASE_HEIGHT);
+    graphics->x_multiplier = graphics->y_multiplier;
     SDL_SetWindowSize(graphics->window, new_width, new_height);
 }
 
