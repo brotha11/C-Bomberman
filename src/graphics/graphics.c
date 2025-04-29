@@ -328,9 +328,7 @@ void update_window_size(Graphics* graphics) {
         new_height = graphics->screen.SCREEN_HEIGHT = display.h;
         new_width = graphics->screen.SCREEN_WIDTH = display.w;
 
-        printf("W: %i, H: %i", display.w,  display.h);
-
-        SDL_SetWindowFullscreen(graphics->window,SDL_WINDOW_FULLSCREEN);
+        SDL_SetWindowFullscreen(graphics->window,SDL_WINDOW_FULLSCREEN_DESKTOP);
     } else {
         SDL_SetWindowFullscreen(graphics->window,0);
     }
