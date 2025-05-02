@@ -1,7 +1,7 @@
 #include "powerup.h"
 #include "../bombs/fire.h"
 
-void add_powerup(Power_up** head, int x, int y, int power_type) {
+void add_powerup(Power_up** head, int x, int y, int power_type, double* delta) {
     Power_up* new = (Power_up*)malloc(sizeof(Power_up));
 
     if (new == NULL) {
@@ -16,15 +16,16 @@ void add_powerup(Power_up** head, int x, int y, int power_type) {
     new->width = 16;
 
     new->grabable = 1;
-    new->timer = (int)EXPLOSION_TIME;
+    new->timer = new_timer(EXPLOSION_TIME);
     new->visible = true;
 
     new->power_up_type = power_type;
     new->sprite = new_sprite(16,16);
     new->sprite.frame_x_max = 4;
-    new->sprite.image_speed = 10;
+    new->sprite.image_speed = PW_IMG_SPEED;
     new->sprite.x_off = 0;
     new->sprite.y_off = 0;
+    new->p_delta_time = delta;
 
     new->sprite.frame_y = power_type;
 
@@ -48,7 +49,7 @@ void pw_update(Power_up** head, Fire** fires) {
 
         Fire* fire = coll_fire(fires, current->x, current->y, current->width, current->height);
 
-        if (fire && (fire->visible || !fire->visible && fire->timer > EXPLOSION_TIME/4) && current->grabable == 1) {
+        if (fire && (fire->visible || !fire->visible && fire->timer.time > EXPLOSION_TIME/4) && current->grabable == 1) {
             current->grabable = 0;
             current->sprite.frame_x = 0;
             current->sprite.frame_y = 0;
@@ -58,19 +59,18 @@ void pw_update(Power_up** head, Fire** fires) {
         }
 
         if (current->grabable == 0) {
-            if (current->timer != 0) current->timer--;
+            if (tick_timer(&current->timer, current->p_delta_time) == 0) {}
             else {
                 free_powerup(head, current);
                 current = next;
                 continue;
             }
-            if (current->timer == 1) {
+            if (current->timer.time <= (*current->p_delta_time)) {
                 current->visible = false;
             }
-            animate_sprite_timer(&current->sprite, current->timer, (int)EXPLOSION_TIME);
-
+            animate_sprite_timer(&current->sprite, current->timer.time, EXPLOSION_TIME, current->p_delta_time);
         } else {
-            animate_sprite(&current->sprite);
+            animate_sprite(&current->sprite, current->p_delta_time);
         }
 
 

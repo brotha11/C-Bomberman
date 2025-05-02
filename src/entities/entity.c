@@ -1,9 +1,13 @@
 #include "entity.h"
 
-Entity* new_entity(Entity** head, int x, int y, int width, int height, float max) {
+Entity* new_entity(Entity** head, int x, int y, int width, int height, double max, double* delta) {
     Entity *new = (Entity*)malloc(sizeof(Entity));
 
     new->alive = true;
+
+    // Save memory dir from delta time
+    new->p_delta_time = delta;
+
     new->x = x;
     new->y = y;
     new->last_x = x;
@@ -14,7 +18,8 @@ Entity* new_entity(Entity** head, int x, int y, int width, int height, float max
     new->facing_x = 0;
     new->facing_y = 1;
 
-    new->shake_x = new->shake_y = new->shake_timer = 0;
+    new->shake_x = new->shake_y = 0;
+    new->shake_timer = new_timer(0);
 
     new->slide_w = width / 4;
     new->slide_h = height;
@@ -60,7 +65,7 @@ void e_move(Entity* entity, Collision** collision) {
     int divide = 512;
     int slide_factor = (entity->height - abs(entity->height - entity->height/divide) / 2);
 
-    entity->sub_x += entity->hspeed;
+    entity->sub_x += (entity->hspeed * (*entity->p_delta_time) * 60);
     entity->final_x = round(entity->sub_x);
     entity->sub_x -= entity->final_x;
 
@@ -91,7 +96,7 @@ void e_move(Entity* entity, Collision** collision) {
         } else break;
     }
     
-    entity->sub_y += entity->vspeed;
+    entity->sub_y += (entity->vspeed * (*entity->p_delta_time) * 60);
     entity->final_y = round(entity->sub_y);
     entity->sub_y -= entity->final_y;
 
@@ -129,7 +134,7 @@ void e_move_all(Entity* entity, Collision** collision, Power_up** powers, Entity
     entity->last_x = entity->x;
     entity->last_y = entity->y;
 
-    entity->sub_x += entity->hspeed;
+    entity->sub_x += (entity->hspeed * (*entity->p_delta_time) * 60);
     entity->final_x = round(entity->sub_x);
     entity->sub_x -= entity->final_x;
 
@@ -162,7 +167,7 @@ void e_move_all(Entity* entity, Collision** collision, Power_up** powers, Entity
         }
     }
     
-    entity->sub_y += entity->vspeed;
+    entity->sub_y += (entity->vspeed * (*entity->p_delta_time) * 60);
     entity->final_y = round(entity->sub_y);
     entity->sub_y -= entity->final_y;
 
@@ -228,18 +233,25 @@ Entity* coll_entity_ext(Entity** head, Entity* self, int x, int y, int true_x, i
     return NULL;  // No hay colisión
 }
 
-void e_shake(int* sh_x, int* sh_y, int* timer, int shake_oft, int dist) {
-    if (*timer > 0) {
-        if ((*timer) % shake_oft == 0) {
+void e_shake(Timer* timer, int* sh_x, int* sh_y, double shake_oft, int dist, double* delta) {
+    tick_timer(timer, delta);
+
+    if (timer->time > (*delta)) {
+        // Tick saved value
+        timer->saved_00 -= (*delta);
+
+        if (timer->saved_00 <= 0) {
             srand(clock() + *sh_x + *sh_y);
             *sh_x = (int) round(rand()%(dist*2)+1) - dist;
 
             srand(clock() + *sh_x + *sh_y);
             *sh_y = (int) round(rand()%5) - 2;
+
+            timer->saved_00 = shake_oft;
         }
-        (*timer)--;
     } else {
         *sh_x = *sh_y = 0;
+        timer->saved_00 = 0;
     }
 
 }

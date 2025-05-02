@@ -14,6 +14,8 @@
 #include "../modes/battle/battle_mode_manager.h"
 #include "../input/controller.h"
 #include "../rooms/camera.h"
+#include "../audio/music.h"
+#include "timer.h"
 #include "event.h"
 
 struct game
@@ -21,6 +23,7 @@ struct game
     bool game_running;
     Graphics graphics;
     Controller controllers[MAX_BATTLE_PLAYERS];
+    //Music music;
     //Camera camera;
     Battle_manager battle;
 
@@ -30,6 +33,8 @@ struct game
     Profile type0_profile;
     Profile type1_profile;
     Profile nouse_profile;
+
+    double delta_time;
 };
 typedef struct game Game;
 

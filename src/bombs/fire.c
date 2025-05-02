@@ -2,7 +2,7 @@
 #include "bomb.h"
 
 void add_fire(Fire** fires, Bomb** bombs, Collision** collision, Power_up** powers, Player* owner,
-    int x, int y, int direction, int length, bool visible, bool center) {
+    int x, int y, int direction, int length, int type, bool visible, bool center) {
     // Si length es menor o igual a 0, terminamos la recursión
 
     Fire *new = (Fire*)malloc(sizeof(Fire));
@@ -11,6 +11,7 @@ void add_fire(Fire** fires, Bomb** bombs, Collision** collision, Power_up** powe
     int next_x = 0, next_y = 0;
 
     new->owner = owner;
+    new->type = type;
 
     new->direction = direction;
     new->length = length;
@@ -18,7 +19,7 @@ void add_fire(Fire** fires, Bomb** bombs, Collision** collision, Power_up** powe
     new->swap_visible = visible;
     new->center = center;
 
-    new->timer = EXPLOSION_TIME;
+    new->timer = new_timer(EXPLOSION_TIME);
 
     new->height = 16;
     new->width = 16;
@@ -92,16 +93,39 @@ void add_fire(Fire** fires, Bomb** bombs, Collision** collision, Power_up** powe
 
     if (length > 0)
     {
-        if (!coll_bomb(bombs, new->x + next_x - m_x, new->y + next_y - m_y, new->width, new->height) 
-            && !coll_meeting(collision, new->x + next_x - m_x, new->y + next_y - m_y, new->width, new->height)
-                && !grab_powerup(powers, new->x + next_x - m_x, new->y + next_y - m_y, 16, 16))
-            add_fire(fires, bombs, collision, powers, owner, new->x + next_x - m_x, new->y + next_y - m_y, direction, length - 1, true, false);
-        else add_fire(fires, bombs, collision, powers, owner, new->x + next_x - m_x, new->y + next_y - m_y, direction, 0, false, false);
+        //Bomb* cbomb = coll_bomb(bombs, new->x + next_x - m_x, new->y + next_y - m_y, new->width, new->height);
+        Collision* cblock = coll_meeting(collision, new->x + next_x - m_x, new->y + next_y - m_y, new->width, new->height);
+        Power_up* cpower = grab_powerup(powers, new->x + next_x - m_x, new->y + next_y - m_y, 16, 16);
+
+        int follow = length - 1;
+        bool vis = true;
+
+        // Judge collisions
+        if (cblock || cpower) {
+            if (cpower) {
+                // Stop blow at power up
+                if (type != BT_PIERCING) {
+                    follow = 0;
+                    vis = false;
+                }
+            }
+            if (cblock) {
+                // Stop piercing blow only on non-brick blocks
+                if (type != BT_PIERCING || cblock->type != BRICK) {
+                    follow = 0;
+                    vis = false;
+                }
+            }
+        }
+
+        // Generate fire
+        add_fire(fires, bombs, collision, powers, owner, new->x + next_x - m_x,
+            new->y + next_y - m_y, direction, follow, type, vis, false);
     }
 }
 
 
-void f_update(Fire** fires, Bomb** bombs) {
+void f_update(Fire** fires, Bomb** bombs, double* delta) {
     Fire* current = *fires;
     Fire* next_f;
 
@@ -116,10 +140,10 @@ void f_update(Fire** fires, Bomb** bombs) {
         //Blow up bombs
         Bomb* blow = coll_bomb(bombs,current->x,current->y,current->width, current->height);
         if (blow) {
-            if (blow->timer > 5) blow->timer = 5;
+            if (blow->timer.time > BOMB_EXPLODE_CRITICAL) blow->timer.time = BOMB_EXPLODE_CRITICAL;
         }
 
-        if (current->timer == 1) {
+        if (current->timer.time == 1) {
             current->swap_visible = false;
             current->visible = false;
         }
@@ -128,15 +152,15 @@ void f_update(Fire** fires, Bomb** bombs) {
         if (current->swap_visible) {
             Fire* coll = coll_fire_exclude(fires, current, current->x, current->y, current->width, current->height);
 
-            if (coll && coll->timer > current->timer && !current->center) {
+            if (coll && coll->timer.time > current->timer.time && !current->center) {
                 current->visible = false;
             } else {
                 current->visible = true;
             }
         }
-        animate_sprite_timer(&current->sprite, current->timer, EXPLOSION_TIME);
+        animate_sprite_timer(&current->sprite, current->timer.time, EXPLOSION_TIME, delta);
 
-        if (current->timer != 0) current->timer--;
+        if (tick_timer(&current->timer, delta) == 0) {}
         else {
             free_fire(fires,current);
             current = next_f;

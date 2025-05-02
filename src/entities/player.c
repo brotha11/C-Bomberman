@@ -1,19 +1,16 @@
 #include "player.h"
 
-Player new_player(Entity** head, int x, int y, int w, int h, float max, int id) {
+Player new_player(Entity** head, int x, int y, int w, int h, double max, int id, double* delta) {
 
     Player new;
 
-    new.base = new_entity(head, x, y, w, h, max);
-    new.bomb_placed_timer = BOMB_COOLDOWN;
+    new.base = new_entity(head, x, y, w, h, max, delta);
     new.blast_power = 2;
     new.bomb_amount = 1;
     new.action = P_NONE;
-    new.action_timer = 0;
-
+    new.bomb_type = BT_REGULAR;
 
     new.bombs_placed = 0;
-    new.death_timer = DEATH_TIMER_MAX;
     new.bomb_action = 0;
     new.kick_power = 0;
 
@@ -21,8 +18,14 @@ Player new_player(Entity** head, int x, int y, int w, int h, float max, int id) 
     new.base->sprite.x_off = -2;
     new.player_on = false;
     new.id = id;
-    new.kill_celebration_timer = 0;
     new.com = false;
+    new.played_death_cry = false;
+
+    // Timers
+    new.bomb_placed_timer = new_timer(BOMB_COOLDOWN);
+    new.action_timer = new_timer(0);
+    new.death_timer = new_timer(DEATH_TIMER_MAX);
+    new.kill_celebration_timer = new_timer(0);
 
     return new;
 }
@@ -82,9 +85,8 @@ void p_update(Player* player, Controller* controller, Entity** head, Collision**
                 break;
         }
         // Reduce action timer
-        if (player->action_timer > 0) player->action_timer--;
-
-        if (player->action_timer <= 1) {
+        if (tick_timer(&player->action_timer, player->base->p_delta_time) == 0) {}
+        if (player->action_timer.time <= (*player->base->p_delta_time)) {
             switch(player->action) {
                 case P_KICK:
                 case P_THROW:
@@ -97,16 +99,15 @@ void p_update(Player* player, Controller* controller, Entity** head, Collision**
         }
 
         // Place bomb
-
-        if (player->bomb_placed_timer != 0) player->bomb_placed_timer--;
+        tick_timer(&player->bomb_placed_timer, player->base->p_delta_time);
 
         if (controller->key_bomb) {
-            if (player->bombs_placed < player->bomb_amount && player->bomb_placed_timer == 0) 
+            if (player->bombs_placed < player->bomb_amount && player->bomb_placed_timer.time == 0) 
                 place_bomb(player, head, bombs, collision);
 
             // Standing on bomb actions
            if (coll_bomb(bombs, player->base->x, player->base->y, 16, 16) 
-                && player->bomb_released && player->bomb_placed_timer < (int)BOMB_COOLDOWN/2) {
+                && player->bomb_released && player->bomb_placed_timer.time < BOMB_COOLDOWN/2) {
                 switch(player->bomb_action) {
                     case BOMB_LINE:
                         place_bomb_line(player, head, bombs, collision, powers);
@@ -136,7 +137,7 @@ void p_update(Player* player, Controller* controller, Entity** head, Collision**
                     // Set timer
                     if (player->action != P_KICK) {
                         player->action = P_KICK;
-                        player->action_timer = ACTION_COOLDOWN;
+                        player->action_timer.time = ACTION_COOLDOWN;
                     }
                 }
             }
@@ -148,7 +149,7 @@ void p_update(Player* player, Controller* controller, Entity** head, Collision**
                     // Set timer
                     if (player->action != P_KICK) {
                         player->action = P_KICK;
-                        player->action_timer = ACTION_COOLDOWN;
+                        player->action_timer.time = ACTION_COOLDOWN;
                     }
                 }
             }
@@ -166,13 +167,16 @@ void p_update(Player* player, Controller* controller, Entity** head, Collision**
                 player->bomb_amount++;
                 break;
             case SPEED_UP:
-                player->base->max_speed += 0.1f;
+                player->base->max_speed += 0.1;
                 break;
             case BOMB_LINE:
                 player->bomb_action = BOMB_LINE;
                 break;
             case KICK:
                 player->kick_power = 1;
+                break;
+            case BOMB_PIERCING:
+                player->bomb_type = BT_PIERCING;
                 break;
             default:
                 break;
@@ -187,18 +191,18 @@ void p_update(Player* player, Controller* controller, Entity** head, Collision**
         Fire* fire = coll_fire(fires,player->base->x,player->base->y,player->base->width, player->base->height);
         if (fire) {
             if (player->base->alive) 
-                fire->owner->kill_celebration_timer = KILL_CELEBRATION;
+                fire->owner->kill_celebration_timer.time = KILL_CELEBRATION;
             player_kill(player, true);
         }
 
 
         // Reduce kill timer
-        if (player->kill_celebration_timer > 0) player->kill_celebration_timer--;
+        tick_timer(&player->kill_celebration_timer, player->base->p_delta_time);
 
     } // ALIVE END IF
     // Reduce death timer
     else {
-        if (player->death_timer != 0) player->death_timer--;
+        tick_timer(&player->death_timer, player->base->p_delta_time);
 
         if (player->base->sprite.frame == 7) {
             player->base->sprite.image_speed = -1;
@@ -208,7 +212,9 @@ void p_update(Player* player, Controller* controller, Entity** head, Collision**
     // Update sprite
 
     // Shake
-    e_shake(&player->base->shake_x, &player->base->shake_y, &player->base->shake_timer, 2, 1);
+    e_shake(&player->base->shake_timer, &player->base->shake_x, &player->base->shake_y,
+        0.03, 1, player->base->p_delta_time);
+
 
     // States
     if (player->base->alive) { // Alive
@@ -220,7 +226,7 @@ void p_update(Player* player, Controller* controller, Entity** head, Collision**
             }
         }
         else {
-            player->base->sprite.image_speed = (int)ANIM_SPEED / player->base->max_speed;
+            player->base->sprite.image_speed = ANIM_SPEED / player->base->max_speed;
         }
 
         //player->base->sprite.frame_x_max = 4;
@@ -240,29 +246,31 @@ void p_update(Player* player, Controller* controller, Entity** head, Collision**
         if (player->burned) player->base->sprite.frame_y = P_BLOWN;
         else player->base->sprite.frame_y = P_DEAD;
 
-        if (player->death_timer > DEATH_START) {
+        if (player->death_timer.time > DEATH_START) {
             player->base->sprite.frame = 0;
-            player->base->sprite. image_speed = 0;
+            player->base->sprite.image_speed = 0;
         } else {
             // Play death cry
-            if (player->death_timer == DEATH_START) {
+            if (player->death_timer.time <= DEATH_START && !player->played_death_cry) {
                 unsigned seed = (clock() + player->base->x * player->base->y);
 
                 int plus = round(seed % DEATH_VC);
                 play_sound(SFX_DEATH_VC0+plus);
+
+                player->played_death_cry = true;
             }
 
             if (player->base->sprite.image_speed != -1) {
                 player->base->sprite.frame_x_max = 8;
-                player->base->sprite.image_speed = 3;
+                player->base->sprite.image_speed = 0.044;
             }
         }
     }
 
     if (player->action == P_NONE || player->action == P_HOLD) {
-        animate_sprite(&player->base->sprite);
+        animate_sprite(&player->base->sprite, player->base->p_delta_time);
     } else {
-        animate_sprite_timer(&player->base->sprite, player->action_timer, ACTION_COOLDOWN);
+        animate_sprite_timer(&player->base->sprite, player->action_timer.time, ACTION_COOLDOWN, player->base->p_delta_time);
     }
 }
 
@@ -272,8 +280,8 @@ void place_bomb(Player* player, Entity** head, Bomb** bombs, Collision** collisi
     get_tile_position(&tile_x, &tile_y, player->base->x, player->base->y, 16, 16);
 
     if (!coll_bomb(bombs, tile_x, tile_y, 16, 16)) {
-        add_bomb(bombs, collision, player, head, tile_x, tile_y, player->blast_power);
-        player->bomb_placed_timer = BOMB_COOLDOWN;
+        add_bomb(bombs, collision, player, head, tile_x, tile_y, player->blast_power, player->bomb_type, player->base->p_delta_time);
+        player->bomb_placed_timer.time = BOMB_COOLDOWN;
     }
 }
 
@@ -291,7 +299,7 @@ void place_bomb_line(Player* player, Entity** head, Bomb** bombs, Collision** co
         }
 
         // Colocamos la bomba en la posición calculada
-        add_bomb(bombs, collision, player, head, tile_x, tile_y, player->blast_power);
+        add_bomb(bombs, collision, player, head, tile_x, tile_y, player->blast_power, player->bomb_type, player->base->p_delta_time);
 
         // Aumentamos el índice para colocar la siguiente bomba más lejos
         ++index;
@@ -304,8 +312,9 @@ void player_kill(Player* player, bool burnt) {
 
         player->burned = burnt;
         player->base->alive = false;
-        player->death_timer = DEATH_TIMER_MAX;
-        player->base->shake_timer = (int) abs(DEATH_TIMER_MAX - DEATH_START) * 0.7;
+        player->death_timer.time = DEATH_TIMER_MAX;
+        player->base->shake_timer.time = fabs(DEATH_TIMER_MAX - DEATH_START) * 0.8;
         player->action = P_NONE;
+        player->base->sprite.frame_x = 0;
     }
 }

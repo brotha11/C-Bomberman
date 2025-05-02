@@ -2,14 +2,20 @@
 #define POWERUP_H
 
 #include "../graphics/sprite.h"
+#include "../game/timer.h"
 
 #define SIZE 4
 
-#define FIRE_UP 0
-#define BOMB_UP 1
-#define SPEED_UP 2
-#define BOMB_LINE 3
-#define KICK 4
+typedef enum POWER_LIST {
+    FIRE_UP,
+    BOMB_UP,
+    SPEED_UP,
+    BOMB_LINE,
+    KICK,
+    BOMB_PIERCING,
+} POWER_LIST;
+
+#define PW_IMG_SPEED 0.16
 
 typedef struct power_up {
     int x;
@@ -18,7 +24,8 @@ typedef struct power_up {
 
     int power_up_type;
     int grabable;
-    int timer;
+    Timer timer;
+    double* p_delta_time;
     int visible;
 
     Sprite sprite;
@@ -28,7 +35,7 @@ typedef struct power_up {
 
 typedef struct fire Fire;
 
-void add_powerup(Power_up** head, int x, int y, int power_type);
+void add_powerup(Power_up** head, int x, int y, int power_type, double* delta);
 Power_up* grab_powerup(Power_up** head, int x, int y, int width, int height);
 Power_up* coll_powerup(Power_up** head, int x, int y, int width, int height);
 void pw_update(Power_up** head, Fire** fires);

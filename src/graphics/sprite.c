@@ -7,12 +7,15 @@ Sprite new_sprite(int w, int h) {
     tex.frame_rect.w = tex.width = w;
     tex.frame_rect.h = tex.height = h;
     tex.frame = 0;
+    tex.w_mult = 1;
+    tex.h_mult = 1;
 
     tex.frame_x = tex.frame_y = 0;
     tex.x_off = tex.y_off = 0;
     tex.frame_x_max = 0;
 
-    tex.image_change = tex.image_speed = 0;
+    tex.image_change = new_timer(0);
+    tex.image_speed = 0;
     tex.sprite = 0;
 
     return tex;
@@ -38,13 +41,13 @@ SDL_Texture* load_sprite(const char* path, SDL_Renderer* renderer) {
     return tex;
 }
 
-void animate_sprite(Sprite* sprite) {
+void animate_sprite(Sprite* sprite, double* delta) {
 
     if(sprite->image_speed > 0) {
-        if (sprite->image_change > 0) sprite->image_change--;
+        if (tick_timer(&sprite->image_change, delta) == 0) {}
         else {
             sprite->frame = (sprite->frame += 1)%sprite->frame_x_max;
-            sprite->image_change = sprite->image_speed;
+            sprite->image_change.time = sprite->image_speed;
         }
 
         // Update 
@@ -53,12 +56,20 @@ void animate_sprite(Sprite* sprite) {
     }
 }
 
-void animate_sprite_timer(Sprite* sprite, int timer, int timer_max) {
+void animate_sprite_timer(Sprite* sprite, double timer, double timer_max, double* delta) {
     if (sprite->frame != sprite->frame_x_max) {
-        sprite->frame = (int)((1.0f - ((float)timer / timer_max)) * sprite->frame_x_max);
+        sprite->frame = (int)((1 - (timer / timer_max)) * sprite->frame_x_max);
         sprite->frame = sprite->frame%sprite->frame_x_max;
         // Update 
         sprite->frame_rect.x = sprite->frame_rect.w * (sprite->frame_x + sprite->frame);
         sprite->frame_rect.y = sprite->frame_rect.h * sprite->frame_y;
     }
+}
+
+void normalize_scale(Sprite* sprite, double goal, double speed, double* delta) {
+    //double t = 1.0 - pow(1.0 - speed, *delta);
+    double t = speed * (BASE_FPS * (*delta));
+
+    sprite->w_mult = lerp(sprite->w_mult, goal, t);
+    sprite->h_mult = lerp(sprite->h_mult, goal, t);
 }

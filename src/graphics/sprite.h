@@ -1,6 +1,15 @@
 #ifndef SPRITE_H
 #define SPRITE_H
 
+#include "SDL2/SDL.h"
+#include "SDL2/SDL_image.h"
+#include "stdio.h"
+#include "../game/timer.h"
+#include "../game/game_constants.h"
+#include "../tools/utils.h"
+#include <math.h>
+
+
 // LIST OF TEXTURES
 typedef enum {
     TEX_BOMBER_WHITE,
@@ -79,19 +88,18 @@ typedef enum {
 #define SPR_WIDTH 1
 #define SPR_HEIGHT 2
 
-#include "SDL2/SDL.h"
-#include "SDL2/SDL_image.h"
-#include "stdio.h"
-
 typedef struct sprite {
 
     int sprite;
     SDL_Rect frame_rect;
 
-    int image_speed, image_change;
+    double image_speed;
+    Timer image_change;
     int frame;
     int frame_x, frame_y;
     int width, height;
+
+    double w_mult, h_mult;
 
     int x_off, y_off;
     int frame_x_max;
@@ -101,7 +109,8 @@ typedef struct sprite {
 
 SDL_Texture* load_sprite(const char* path,  SDL_Renderer* renderer);
 Sprite new_sprite(int w, int h);
-void animate_sprite(Sprite* sprite);
-void animate_sprite_timer(Sprite* sprite, int timer, int timer_max);
+void animate_sprite(Sprite* sprite, double* delta);
+void animate_sprite_timer(Sprite* sprite, double timer, double timer_max, double* delta);
+void normalize_scale(Sprite* sprite, double goal, double speed, double* delta);
 
-#endif 
+#endif

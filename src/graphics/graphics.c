@@ -21,7 +21,7 @@ void init_graphics(Graphics* graphics) {
     graphics->rect.h = 0;
 
     graphics->draw_hitboxes = 0;
-
+    
     // Backgrounds
     for (int i = 0; i < MAX_BACKGROUND_COUNT; ++i) {
         graphics->backgrounds[i] = new_bg(0, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -58,7 +58,7 @@ void init_graphics(Graphics* graphics) {
     // Bombs
     graphics->sprites[TEX_BOMB].sprite = load_sprite(BOMB_PATH, graphics->renderer);
     graphics->sprites[TEX_BOMB].spr_width = 16;
-    graphics->sprites[TEX_BOMB].spr_height = 16;
+    graphics->sprites[TEX_BOMB].spr_height = 17;
 
     // Fire exp
     graphics->sprites[TEX_FIRE].sprite = load_sprite(FIRE_PATH, graphics->renderer);
@@ -112,7 +112,12 @@ void tex_render(Graphics* graphics, Sprite* sprite, int spr, int x, int y) {
             (sprite->frame_x + sprite->frame)*graphics->sprites[spr].spr_width, 
                     sprite->frame_y*graphics->sprites[spr].spr_height, 
                             graphics->sprites[spr].spr_width, graphics->sprites[spr].spr_height);
-    rect_resolution_fix(graphics, &graphics->rect, x + sprite->x_off, y + sprite->y_off, sprite->frame_rect.w, sprite->frame_rect.h);
+                            //sprite->width, sprite->height);
+    int w_diff = sprite->frame_rect.w - (sprite->frame_rect.w * sprite->w_mult);
+    int h_diff = sprite->frame_rect.h - (sprite->frame_rect.h  * sprite->h_mult);
+
+    rect_resolution_fix(graphics, &graphics->rect, x + sprite->x_off + w_diff/2, y + sprite->y_off + h_diff, 
+        sprite->frame_rect.w * sprite->w_mult, sprite->frame_rect.h  * sprite->h_mult);
 
     SDL_RenderCopy(graphics->renderer, graphics->sprites[spr].sprite, &sprite->frame_rect, &graphics->rect);
 
@@ -257,15 +262,17 @@ void gui_battle_render(Graphics* graphics, Battle_manager* battle) {
     graphics->gui_symbols.frame_x = SY_CLOCK;
         tex_render(graphics, &graphics->gui_symbols, TEX_GUI_SYMBOLS, CLOCK_X, 4); 
     // Minutes digits
-    graphics->gui_symbols.frame_x = (int)(battle->battle_clock/60);
+    graphics->gui_symbols.frame_x = (int)(battle->battle_time.time/60);
     tex_render(graphics, &graphics->gui_symbols, TEX_GUI_SYMBOLS, CLOCK_X+14, 4);
 
     // Colon
     graphics->gui_symbols.frame_x = SY_COLON;
     tex_render(graphics, &graphics->gui_symbols, TEX_GUI_SYMBOLS, CLOCK_X+22, 4);
 
+    // Clock
+    int seconds = (int)battle->battle_time.time % 60;
+
     // Tens digit of seconds
-    int seconds = battle->battle_clock % 60;
     graphics->gui_symbols.frame_x = seconds / 10;
     tex_render(graphics, &graphics->gui_symbols, TEX_GUI_SYMBOLS, CLOCK_X+30, 4);
 
@@ -286,20 +293,20 @@ void gui_battle_render(Graphics* graphics, Battle_manager* battle) {
 
             // DEAD
             if (battle->players[i].base->alive == false) {
-                if (battle->players[i].death_timer <= DEATH_TIMER_MAX/10) spr = SY_DBOMB_W + i;
+                if (battle->players[i].death_timer.time <= DEATH_TIMER_MAX/10) spr = SY_DBOMB_W + i;
                 else {
-                    int frame = (int)((DEATH_TIMER_MAX - battle->players[i].death_timer) / (DEATH_TIMER_MAX/8));
+                    int frame = (int)((DEATH_TIMER_MAX - battle->players[i].death_timer.time) / (DEATH_TIMER_MAX/8));
                     spr = SY_KILLED + (frame % 2);
                 }
                 graphics->gui_symbols.frame_x = spr;
 
             } else { // ALIVE
                 // Idle
-                if (battle->players[i].kill_celebration_timer == 0) {
+                if (battle->players[i].kill_celebration_timer.time <= (*battle->p_delta_time)) {
                     graphics->gui_symbols.frame_x = spr + i;
                 } else { // Celebrating
                     int face = SY_KBOMB_W + i*2;
-                    int frame = (int)((KILL_CELEBRATION - battle->players[i].kill_celebration_timer) / (KILL_CELEBRATION/6));
+                    int frame = (int)((KILL_CELEBRATION - battle->players[i].kill_celebration_timer.time) / (KILL_CELEBRATION/6));
                     graphics->gui_symbols.frame_x = face + (frame % 2);
                 }
             }

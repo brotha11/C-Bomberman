@@ -1,18 +1,19 @@
 #include "brick.h"
 
-void add_brick(Brick** bricks, Collision** head, int x, int y, int width, int height) {
+void add_brick(Brick** bricks, Collision** head, int x, int y, int width, int height, double* delta) {
     Brick* new_brick = (Brick*)malloc(sizeof(Brick));
 
-    add_collision(head, x, y, width, height); // Agrega la colisión a la lista
+    add_collision(head, x, y, width, height, BRICK); // Agrega la colisión a la lista
 
     new_brick->coll = *head; // Apunta a la colisión recién creada
     new_brick->broken = false;
     new_brick->next = *bricks;
-    new_brick->timer = EXPLOSION_TIME;
+    new_brick->timer = new_timer(EXPLOSION_TIME);
     new_brick->sprite = new_sprite(16,16);
     new_brick->sprite.frame_x_max = MAX_BRICK_FRAMES;
     new_brick->visible = true;
     new_brick->dummy = x;
+    new_brick->p_delta_time = delta;
 
     *bricks = new_brick;
 }
@@ -36,14 +37,15 @@ void bri_update(Brick** bricks, Fire** fires, Collision** collision, Power_up** 
 
         // Animate
         if (current->broken) {
-            if (current->sprite.frame_x < MAX_BRICK_FRAMES) animate_sprite_timer(&current->sprite, current->timer, EXPLOSION_TIME);
-            if (current->timer == 1) current->visible = false;
+            if (current->sprite.frame_x < MAX_BRICK_FRAMES) 
+                animate_sprite_timer(&current->sprite, current->timer.time, EXPLOSION_TIME, current->p_delta_time);
+            if (current->timer.time == 1) current->visible = false;
         }
 
         if (current->broken) {
-            if (current->timer != 0) current->timer--;
+            if (tick_timer(&current->timer, current->p_delta_time) == 0) {}
             else {
-                spawn_power(powers, current->coll->x, current->coll->y);
+                spawn_power(powers, current->coll->x, current->coll->y, current->p_delta_time);
                 free_brick(bricks, current, collision);
                 current = next_brick;
                 continue;
@@ -54,34 +56,40 @@ void bri_update(Brick** bricks, Fire** fires, Collision** collision, Power_up** 
     }
 }
 
-void spawn_power(Power_up** powers, int x, int y) {
+void spawn_power(Power_up** powers, int x, int y, double* delta) {
     unsigned seed = (clock() + x * y);
     srand(seed);
     if (rand()%100 <= 7) {
-        add_powerup(powers,x,y,FIRE_UP);
+        add_powerup(powers,x,y,FIRE_UP,delta);
         return;
     }
 
     srand(seed* 2);
     if (rand()%100 <= 7) {
-        add_powerup(powers,x,y,BOMB_UP);
+        add_powerup(powers,x,y,BOMB_UP,delta);
         return;
     }
 
     srand(seed* 3);
     if (rand()%100 <= 7) {
-        add_powerup(powers,x,y,SPEED_UP);
+        add_powerup(powers,x,y,SPEED_UP,delta);
         return;
     }
 
     srand(seed* 4);
     if (rand()%100 <= 3) {
-        add_powerup(powers,x,y,BOMB_LINE);
+        add_powerup(powers,x,y,BOMB_LINE,delta);
         return;
     }
     srand(seed* 5);
     if (rand()%100 <= 4) {
-        add_powerup(powers,x,y,KICK);
+        add_powerup(powers,x,y,KICK,delta);
+        return;
+    }
+
+    srand(seed* 6);
+    if (rand()%100 <= 2) {
+        add_powerup(powers,x,y,BOMB_PIERCING,delta);
         return;
     }
 }

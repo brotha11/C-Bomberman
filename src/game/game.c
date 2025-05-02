@@ -3,8 +3,11 @@
 void init_game(Game* game) {
 
     game->game_running = true;
+    game->delta_time = 0;
+
     init_graphics(&game->graphics);
     sound_init();
+    //game->music = init_music_player();
     
     // Key profiles
     game->main_profile = set_profile(SDL_SCANCODE_W, SDL_SCANCODE_S,
@@ -15,14 +18,15 @@ void init_game(Game* game) {
         SDL_SCANCODE_LEFT, SDL_SCANCODE_RIGHT, SDL_SCANCODE_RSHIFT);
     game->nouse_profile = set_profile(0, 0, 0, 0, 0);
 
-    battle_init(&game->battle);
-
+    battle_init(&game->battle, &game->delta_time);
 
     start_room(game);
 }
 
 void run_game(Game* game) {
     while (game->game_running) {
+
+        game->delta_time = get_delta_time();
 
         update(game);
         render(game);
@@ -51,11 +55,13 @@ void free_game(Game* game) {
     battle_free(&game->battle);
     sound_exit();
     input_exit(game->controllers);
+    //close_music_player(&game->music);
 }
 
 void update(Game* game) {
     battle_update(&game->battle, game->controllers, &game->graphics.screen);
     bg_update(game->graphics.backgrounds);
+    //manage_music_loop(&game->music, BGM_BATTLE_00);
 }
 
 void start_room(Game* game) {
@@ -66,6 +72,8 @@ void start_room(Game* game) {
 
     game->graphics.backgrounds[0] = new_bg(-game->battle.camera.x*2,0,256,256,1,1,0,0,1);
     //game->graphics.backgrounds[1] = new_bg(game->battle.camera.x,133,256,137,1,0,0,0,1);
+
+    //start_song(&game->music, BGM_BATTLE_00);
 }
 
 void render(Game* game) {

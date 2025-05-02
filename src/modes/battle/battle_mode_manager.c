@@ -1,6 +1,6 @@
 #include "battle_mode_manager.h"
 
-void battle_init(Battle_manager* battle) {
+void battle_init(Battle_manager* battle, double* delta_time) {
     battle->bombs = NULL;
     battle->bricks = NULL;
     battle->collision = NULL;
@@ -11,10 +11,10 @@ void battle_init(Battle_manager* battle) {
     battle->current_map = 0;
     battle->win_goal = 0;
     battle->state = BATTLE_MENU_PLAYERS;
-    
-    battle->battle_time = 120;
-    battle->battle_clock = 0;
-    battle->battle_tick = SECOND;
+
+    battle->p_delta_time = delta_time;
+
+    battle->battle_time = new_timer(120);
 
     for (int i = 0; i < MAX_BATTLE_PLAYERS; ++i) {
         battle->players_on[i] = 0;
@@ -42,21 +42,20 @@ void battle_load(Battle_manager* battle, Screen* screen) {
 
     srand(clock());
 
-    battle->battle_clock = battle->battle_time;
-    battle->battle_tick = SECOND;
+    battle->battle_time.time = 120.999;
 
     battle_free(battle);
-    add_collision(&battle->collision, s_x-16,s_y-32,16*14,16);
-    add_collision(&battle->collision, s_x-16,s_y+16*10,16*14,16);
+    add_collision(&battle->collision, s_x-16,s_y-32,16*14,16, BLOCK);
+    add_collision(&battle->collision, s_x-16,s_y+16*10,16*14,16, BLOCK);
 
-    add_collision(&battle->collision, s_x-32,s_y-32,16,16*13);
-    add_collision(&battle->collision, s_x+16*12,s_y-32,16,16*13);
+    add_collision(&battle->collision, s_x-32,s_y-32,16,16*13, BLOCK);
+    add_collision(&battle->collision, s_x+16*12,s_y-32,16,16*13, BLOCK);
 
     //for (int i = 0; i < 10000000; ++i) add_collision(&battle->collision, i*16,-16,16,16);
 
     for (int i = 0; i < 6; ++i) {
         for(int j = 0; j < 5; ++j){
-            add_collision(&battle->collision, s_x + 32*i, s_y + 32*j, 16, 16);
+            add_collision(&battle->collision, s_x + 32*i, s_y + 32*j, 16, 16, BLOCK);
         }
     }
 
@@ -71,7 +70,7 @@ void battle_load(Battle_manager* battle, Screen* screen) {
                 coll_meeting(&battle->collision, (s_x-16) + j*16, (s_y-16) + i*16, 16, 16)) continue;
 
             if (rand()%100 < 65)
-                add_brick(&battle->bricks, &battle->collision, (s_x-16) + j*16, (s_y-16) + i*16, 16, 16);
+                add_brick(&battle->bricks, &battle->collision, (s_x-16) + j*16, (s_y-16) + i*16, 16, 16, battle->p_delta_time);
         }
     }
 
@@ -99,9 +98,10 @@ void battle_load(Battle_manager* battle, Screen* screen) {
                 break;
         }
 
-        battle->players[p] = new_player(&battle->entities, s_x-16 ,s_y-16,16,16,1,p);
+        battle->players[p] = new_player(&battle->entities, s_x-16 ,s_y-16,16,16,1,p, battle->p_delta_time);
 
         if (p < 2) {
+            
             //if (p != 0) {
                 battle->players[p].player_on = true;
                 battle->players_on[p] = 1;
@@ -121,12 +121,12 @@ void battle_update(Battle_manager* battle, Controller* controllers, Screen* scre
 
     int alive_players = MAX_BATTLE_PLAYERS;
 
-    battle_clock_count(&battle->battle_clock, &battle->battle_tick);
+    tick_timer(&battle->battle_time, battle->p_delta_time);
 
     int gc = 0;
     for (int p = 0; p < MAX_BATTLE_PLAYERS; ++p) {
 
-        if (battle->battle_clock == 0 && battle->battle_tick == 0) // Times up
+        if (battle->battle_time.time <= 0) // Times up
         {
            player_kill(&battle->players[p], false);
         }
@@ -142,11 +142,11 @@ void battle_update(Battle_manager* battle, Controller* controllers, Screen* scre
 
 
         gc++;
-        if (battle->players[p].base->alive == false && battle->players[p].death_timer == 0) alive_players--;
+        if (battle->players[p].base->alive == false && battle->players[p].death_timer.time == 0) alive_players--;
     }
 
     b_update(&battle->bombs, &battle->fires, &battle->collision, &battle->power_ups, &battle->entities);
-    f_update(&battle->fires, &battle->bombs);
+    f_update(&battle->fires, &battle->bombs, battle->p_delta_time);
     bri_update(&battle->bricks, &battle->fires, &battle->collision, &battle->power_ups);
     pw_update(&battle->power_ups, &battle->fires);
     cam_update(&battle->camera);
@@ -166,17 +166,6 @@ void battle_update(Battle_manager* battle, Controller* controllers, Screen* scre
     }*/
 }
 
-void battle_clock_count(int* clock, int* second) {
-    // Tick down if its not 0
-    if (*clock >= 0) {
-        if (*second <= 0) {
-            (*second) = SECOND;
-            if(*clock > 0)(*clock)--;
-        } else {
-            (*second)--;
-        }
-    }
-}
 void battle_free(Battle_manager* battle) {
     free_all_bricks(&battle->bricks, &battle->collision);
     free_collisions(&battle->collision);

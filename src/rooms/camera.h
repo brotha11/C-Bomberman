@@ -1,6 +1,8 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+#include "../tools/utils.h"
+
 typedef enum {
     CAM_STOP,
     CAM_FOLLOW,
@@ -8,8 +10,8 @@ typedef enum {
 
 typedef struct camera {
 
-    float xf, yf;
-    float speed;
+    double xf, yf;
+    double speed;
 
     int x, y;
     int width, height;
@@ -17,9 +19,8 @@ typedef struct camera {
     int state;
 } Camera;
 
-Camera new_camera(int x, int y, int width, int height, float speed, int state);
+Camera new_camera(int x, int y, int width, int height, double speed, int state);
 void cam_update(Camera* cam);
-void set_follow(Camera* cam, int x, int y, float speed);
+void set_follow(Camera* cam, int x, int y, double speed);
 
-float lerp(float a, float b, float t);
 #endif

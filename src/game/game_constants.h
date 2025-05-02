@@ -2,7 +2,7 @@
 #define GAME_CONSTANTS_H
 
 #define MAX_BATTLE_PLAYERS 5
-#define SECOND 60
+#define BASE_FPS 60
 
 #define BASE_WIDTH 256
 #define BASE_HEIGHT 224

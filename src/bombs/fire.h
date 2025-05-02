@@ -5,11 +5,12 @@
 #define DOWN 1
 #define LEFT 2
 #define RIGHT 3
-#define EXPLOSION_TIME 30
+#define EXPLOSION_TIME 0.48
 
 #include "../blocks/collision.h"
 #include "../graphics/sprite.h"
 #include "../pickups/powerup.h"
+#include "../game/timer.h"
 
 struct bomb;
 typedef struct bomb Bomb;
@@ -21,7 +22,8 @@ struct fire {
 
     int x, y;
     int width, height;
-    int timer;
+    int type;
+    Timer timer;
     int length;
     int direction;
     bool visible;
@@ -35,10 +37,10 @@ struct fire {
 typedef struct fire Fire;
 
 void add_fire(Fire** fires, Bomb** bombs, Collision** collision, Power_up** powers, Player* owner,
-    int x, int y, int direction, int length, bool visible, bool center);
+    int x, int y, int direction, int length, int type, bool visible, bool center);
 Fire* coll_fire(Fire** head, int x, int y, int width, int height);
 Fire* coll_fire_exclude(Fire** head, Fire* ignore, int x, int y, int width, int height);
-void f_update(Fire** fires, Bomb** bombs);
+void f_update(Fire** fires, Bomb** bombs, double* delta);
 void free_fire(Fire** fires, Fire* fire);
 
 void free_all_fires(Fire** fires);

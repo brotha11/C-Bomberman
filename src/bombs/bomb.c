@@ -2,20 +2,25 @@
 #include "fire.h"
 #include "../entities/player.h"
 
-void add_bomb(Bomb** head, Collision** colls, Player* owner_bomb, Entity** e_head, int col, int row, int blast) {
+void add_bomb(Bomb** head, Collision** colls, Player* owner_bomb, Entity** e_head, int col, int row, int blast, int btype, double* delta) {
     Bomb* new_bomb = (Bomb*)malloc(sizeof(Bomb));
     
-    add_collision(colls, col, row, BOMB_HB, BOMB_HB);
+
+    // This order is important, since the head updates when creating a new collision
+    add_collision(colls, col, row, BOMB_HB, BOMB_HB, COLL_BOMB);
     new_bomb->coll = *colls; // Apunta a la colisión recién creada
-    add_collision(colls, col+BOMB2_DIFF, row+BOMB2_DIFF, BOMB2_HB, BOMB2_HB);
+    add_collision(colls, col+BOMB2_DIFF, row+BOMB2_DIFF, BOMB2_HB, BOMB2_HB, COLL_BOMB);
     new_bomb->coll2 = *colls; // Apunta a la colisión recién creada
 
-    new_bomb->move = new_entity(e_head, col, row, 16, 16, BOMB_KICK_SPEED);
+    new_bomb->move = new_entity(e_head, col, row, 16, 16, BOMB_KICK_SPEED, delta);
     new_bomb->x = col;
     new_bomb->y = row;
     new_bomb->blast_radius = blast;
 
-    new_bomb->timer = BOMB_TIMER;
+    new_bomb->timer = new_timer(BOMB_TIMER);
+
+    // Set bomb type
+    new_bomb->type = btype;
 
     new_bomb->width = BOMB_HB; new_bomb->height = BOMB_HB;
     new_bomb->kick_x = 0; new_bomb->kick_y = 0;
@@ -26,10 +31,11 @@ void add_bomb(Bomb** head, Collision** colls, Player* owner_bomb, Entity** e_hea
     if (new_bomb->owner) new_bomb->owner->bombs_placed++;
 
     new_bomb->sprite = new_sprite(16,16);
-    new_bomb->sprite.image_speed = 14;
+    new_bomb->sprite.image_speed = BOMB_IMG_SPEED;
     new_bomb->sprite.frame_x_max = 4;
     new_bomb->sprite.x_off = 16-BOMB_HB;
-    new_bomb->sprite.y_off = 16-BOMB_HB;
+    new_bomb->sprite.y_off = 16-BOMB_HB - 1;
+    new_bomb->sprite.h_mult = 0.65;
 
     // Play sound for placing bomb
     play_sound(SFX_PLACE_BOMB);
@@ -108,9 +114,18 @@ void b_update(Bomb** head, Fire** fires, Collision** collision, Power_up** power
         }
 
         // Animation
-        animate_sprite(&current->sprite);
 
-        if(current->timer != 0) current->timer--;
+        // Bomb sprite
+        current->sprite.frame_y = current->type;
+
+    
+        // Scale
+        if (current->timer.time > BOMB_EXPLODE_CRITICAL) normalize_scale(&current->sprite, 1, 0.175, current->move->p_delta_time);
+        else normalize_scale(&current->sprite, 2, 0.15, current->move->p_delta_time);
+
+        animate_sprite(&current->sprite, current->move->p_delta_time);
+
+        if (tick_timer(&current->timer, current->move->p_delta_time) == 0) {}
         else {
             b_explode(head, current, fires, collision, powers, e_head);
             current = next_bomb;
@@ -128,10 +143,10 @@ void b_explode(Bomb** head, Bomb* bomb, Fire** fires, Collision** collision, Pow
     bomb->x = tile_x;
     bomb->y = tile_y;
 
-    add_fire(fires, head, collision, powers, bomb->owner, bomb->x, bomb->y, UP, bomb->blast_radius,true, true);
-    add_fire(fires, head, collision, powers, bomb->owner, bomb->x, bomb->y, DOWN, bomb->blast_radius,true, true);
-    add_fire(fires, head, collision, powers, bomb->owner, bomb->x, bomb->y, LEFT, bomb->blast_radius, true, true);
-    add_fire(fires, head, collision, powers, bomb->owner, bomb->x, bomb->y, RIGHT, bomb->blast_radius, true, true);
+    add_fire(fires, head, collision, powers, bomb->owner, bomb->x, bomb->y, UP, bomb->blast_radius, bomb->type, true, true);
+    add_fire(fires, head, collision, powers, bomb->owner, bomb->x, bomb->y, DOWN, bomb->blast_radius, bomb->type,true, true);
+    add_fire(fires, head, collision, powers, bomb->owner, bomb->x, bomb->y, LEFT, bomb->blast_radius, bomb->type, true, true);
+    add_fire(fires, head, collision, powers, bomb->owner, bomb->x, bomb->y, RIGHT, bomb->blast_radius, bomb->type, true, true);
 
     play_sound(SFX_BLOW_UP_R);
 

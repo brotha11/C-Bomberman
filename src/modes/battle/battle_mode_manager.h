@@ -11,6 +11,7 @@
 #include "../../blocks/brick.h"
 #include "../../pickups/powerup.h"
 #include "../../rooms/camera.h"
+#include "../../game/timer.h"
 
 typedef enum {
     BATTLE_MENU_PLAYERS,
@@ -35,17 +36,17 @@ typedef struct battle_manager {
     
     Camera camera;
 
-    int battle_time;
+    Timer battle_time;
+    
+    double* p_delta_time;
 
     int state;
     int win_goal;
     int current_map;
-    int battle_clock;
-    int battle_tick;
 
 } Battle_manager;
 
-void battle_init(Battle_manager* battle);
+void battle_init(Battle_manager* battle, double* delta_time);
 void battle_selection(Battle_manager* battle);
 void battle_load(Battle_manager* battle, Screen* screen);
 void battle_update(Battle_manager* battle, Controller* controllers, Screen* screen);

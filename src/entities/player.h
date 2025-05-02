@@ -6,6 +6,7 @@
 #include "../bombs/bomb.h"
 #include "../pickups/powerup.h"
 #include "time.h"
+#include "../game/timer.h"
 
 typedef enum PLAYER_SPRITE {
     P_DOWN,
@@ -23,16 +24,16 @@ typedef enum PLAYER_ACTION {
     P_KICK = 10
 } PLAYER_ACTION;
 
-#define ANIM_SPEED 8
+#define ANIM_SPEED 0.1333
 
-#define DEATH_TIMER_MAX 100
-#define DEATH_START DEATH_TIMER_MAX - 25
-#define DEATH_END DEATH_START - 30
+#define DEATH_TIMER_MAX 1.6666
+#define DEATH_START DEATH_TIMER_MAX - 0.41
+#define DEATH_END DEATH_START - 0.5
 
-#define KILL_CELEBRATION 80
+#define KILL_CELEBRATION 1.333
 
-#define BOMB_COOLDOWN 12
-#define ACTION_COOLDOWN 16
+#define BOMB_COOLDOWN 0.2
+#define ACTION_COOLDOWN 0.26
 
 struct player {
 
@@ -43,21 +44,24 @@ struct player {
     int bomb_action;
     int kick_power;
     int id;
-
-    int death_timer;
-    int kill_celebration_timer;
     int action;
-    int action_timer;
 
-    int bomb_placed_timer;
+    int bomb_type;
+
+    Timer death_timer;
+    Timer kill_celebration_timer;
+    Timer action_timer;
+    Timer bomb_placed_timer;
+
     bool bomb_released;
     bool player_on;
     bool burned;
+    bool played_death_cry;
     bool com;
 };
 typedef struct player Player;
 
-Player new_player(Entity** head, int x, int y, int width, int height, float max, int id);
+Player new_player(Entity** head, int x, int y, int width, int height, double max, int id, double* delta);
 void p_update(Player* player, Controller* controller, Entity** head, Collision** collision, Bomb** bombs, Fire** fires, Power_up** powers);
 void place_bomb(Player* player, Entity** head, Bomb** bombs, Collision** collision);
 void place_bomb_line(Player* player, Entity** head, Bomb** bombs, Collision** collision, Power_up** powers);

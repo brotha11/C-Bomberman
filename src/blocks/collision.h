@@ -4,19 +4,26 @@
 #include "stdbool.h"
 #include <stdlib.h>
 
+typedef enum COLL_TYPE {
+    BLOCK,
+    BRICK,
+    COLL_BOMB,
+} COLL_TYPE;
+
 struct collision {
 
     int x;
     int y;
     int width;
     int height;
+    int type;
 
     struct collision* next;
 };
 
 typedef struct collision Collision;
 
-void add_collision(Collision** head, int x, int y, int width, int height);
+void add_collision(Collision** head, int x, int y, int width, int height, int type);
 Collision* coll_meeting(Collision** head, int x, int y, int width, int height);
 Collision* coll_meeting_ext(Collision** head, int x, int y, int true_x, int true_y, int width, int height);
 

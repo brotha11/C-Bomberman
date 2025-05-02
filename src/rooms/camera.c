@@ -1,6 +1,6 @@
 #include "camera.h"
 
-Camera new_camera(int x, int y, int width, int height, float speed, int state) {
+Camera new_camera(int x, int y, int width, int height, double speed, int state) {
     Camera cam;
 
     cam.follow_x = 0;
@@ -36,12 +36,8 @@ void cam_update(Camera* cam) {
     }
 }
 
-void set_follow(Camera* cam, int x, int y, float speed) {
+void set_follow(Camera* cam, int x, int y, double speed) {
     cam->follow_x = x;
     cam->follow_y = y;
     cam->speed = speed;
-}
-
-float lerp(float a, float b, float t) {
-    return a + (b - a) * t;
 }
