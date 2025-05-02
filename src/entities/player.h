@@ -45,6 +45,7 @@ struct player {
     int kick_power;
     int id;
     int action;
+    int speed_ups;
 
     int bomb_type;
 

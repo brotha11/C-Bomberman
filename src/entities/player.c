@@ -9,6 +9,7 @@ Player new_player(Entity** head, int x, int y, int w, int h, double max, int id,
     new.bomb_amount = 1;
     new.action = P_NONE;
     new.bomb_type = BT_REGULAR;
+    new.speed_ups = 0;
 
     new.bombs_placed = 0;
     new.bomb_action = 0;
@@ -167,7 +168,7 @@ void p_update(Player* player, Controller* controller, Entity** head, Collision**
                 player->bomb_amount++;
                 break;
             case SPEED_UP:
-                player->base->max_speed += 0.1;
+                player->speed_ups++;
                 break;
             case BOMB_LINE:
                 player->bomb_action = BOMB_LINE;
@@ -184,6 +185,9 @@ void p_update(Player* player, Controller* controller, Entity** head, Collision**
             play_sound(SFX_POWER_UP);
             free_powerup(powers, grab);
         }
+
+        // Update speed
+        player->base->max_speed = (1 + (0.1*player->speed_ups));
 
         //get killed
 
@@ -226,7 +230,7 @@ void p_update(Player* player, Controller* controller, Entity** head, Collision**
             }
         }
         else {
-            player->base->sprite.image_speed = ANIM_SPEED / player->base->max_speed;
+            player->base->sprite.image_speed = ANIM_SPEED * (1 - (player->speed_ups*0.1));
         }
 
         //player->base->sprite.frame_x_max = 4;
