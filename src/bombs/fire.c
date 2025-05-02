@@ -87,6 +87,9 @@ void add_fire(Fire** fires, Bomb** bombs, Collision** collision, Power_up** powe
         new->sprite.frame_y = 0;
     }
 
+    // Apply color
+    new->sprite.frame_y += (7*type);
+
     // Insertamos el nuevo segmento de fuego en la lista
     new->next = *fires;
     *fires = new;
