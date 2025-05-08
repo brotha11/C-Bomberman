@@ -17,6 +17,10 @@ Sprite new_sprite(int w, int h) {
     tex.image_change = new_timer(0);
     tex.image_speed = 0;
     tex.sprite = 0;
+    tex.angle = 0;
+
+    tex.center_point.x = 0;
+    tex.center_point.x = 0;
 
     return tex;
 }

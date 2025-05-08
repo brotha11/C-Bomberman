@@ -1,5 +1,6 @@
 #include "sound.h"
 
+// Static array to store sound effects
 static Mix_Chunk* sfx[TOTAL_SOUNDS];
 
 void sound_init() {

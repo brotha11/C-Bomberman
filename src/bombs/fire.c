@@ -19,7 +19,9 @@ void add_fire(Fire** fires, Bomb** bombs, Collision** collision, Power_up** powe
     new->swap_visible = visible;
     new->center = center;
 
-    new->timer = new_timer(EXPLOSION_TIME);
+    new->time_mult = 1;
+
+    new->timer = new_timer(EXPLOSION_TIME*new->time_mult);
 
     new->height = 16;
     new->width = 16;
@@ -75,20 +77,47 @@ void add_fire(Fire** fires, Bomb** bombs, Collision** collision, Power_up** powe
     // Fire image
     if (!center) {
         if (length == 0) {
-            if (direction == UP) new->sprite.frame_y = 4;
-            else if (direction == DOWN) new->sprite.frame_y = 6;
-            else if (direction == LEFT) new->sprite.frame_y = 1;
-            else if (direction == RIGHT) new->sprite.frame_y = 3;
+            new->sprite.frame_y = 1;
         } else {
-            if (direction == UP || direction == DOWN) new->sprite.frame_y = 5;
-            else if (direction == LEFT || direction == RIGHT) new->sprite.frame_y = 2;
+            new->sprite.frame_y = 2;
         }
     } else {
         new->sprite.frame_y = 0;
     }
 
+
+
+    if (center) {
+        new->sprite.angle = 0;
+        //new->sprite.x_off += 12;
+    } else {
+        // Angle
+        if (direction == UP) {
+            new->sprite.angle = 90;
+            //new->sprite.x_off += 12;
+            //new->sprite.y_off -= 12;
+        }
+        else if (direction == DOWN) {
+            new->sprite.angle = 270;
+            //new->sprite.x_off -= 16;
+            //new->sprite.y_off += 12;
+
+        }
+        else if (direction == LEFT) {
+            new->sprite.angle = 0;
+           // new->sprite.y_off -= 16;
+        }
+        else {
+            new->sprite.angle = 180;
+        }
+    }
+
+    new->sprite.center_point.x = 16/2;
+    new->sprite.center_point.y = 16/2;
+
+
     // Apply color
-    new->sprite.frame_y += (7*type);
+    new->sprite.frame_y += (3*type);
 
     // Insertamos el nuevo segmento de fuego en la lista
     new->next = *fires;
@@ -161,7 +190,7 @@ void f_update(Fire** fires, Bomb** bombs, double* delta) {
                 current->visible = true;
             }
         }
-        animate_sprite_timer(&current->sprite, current->timer.time, EXPLOSION_TIME, delta);
+        animate_sprite_timer(&current->sprite, current->timer.time, EXPLOSION_TIME*current->time_mult, delta);
 
         if (tick_timer(&current->timer, delta) == 0) {}
         else {

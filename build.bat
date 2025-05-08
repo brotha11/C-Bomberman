@@ -16,6 +16,7 @@ set LDFLAGS=-Llib
 set LIBS=-lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_mixer
 set SRC_DIR=src
 set OBJ_DIR=obj
+set VORBIS=builder_obj/stb_vorbis.o
 set RUN_AFTER_COMPILE=false
 
 :: Procesar argumentos
@@ -70,7 +71,7 @@ for /R "%SRC_DIR%" %%F in (*.c) do (
 
 :: Enlazar
 echo Linking...
-"%CC%" -o "%NAME%" "%OBJ_DIR%\*.o" %LDFLAGS% %LIBS%
+"%CC%" -g -o "%NAME%" "%OBJ_DIR%\*.o" %LDFLAGS% %LIBS%
 if errorlevel 1 (
     echo Linking error
     exit /b 1

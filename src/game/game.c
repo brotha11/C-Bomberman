@@ -7,7 +7,7 @@ void init_game(Game* game) {
 
     init_graphics(&game->graphics);
     sound_init();
-    //game->music = init_music_player();
+    music_init(&game->music);
     
     // Key profiles
     game->main_profile = set_profile(SDL_SCANCODE_W, SDL_SCANCODE_S,
@@ -43,7 +43,7 @@ void run_game(Game* game) {
                     game->type0_profile, game->type1_profile, game->nouse_profile);
                 break;
             case EV_FULLSCREEN:
-                set_screen_size(&game->graphics.screen, 1280, 720, 1);
+                set_screen_size(&game->graphics.screen, 480, 270, 1);
                 update_window_size(&game->graphics);
                 break;
         }
@@ -55,13 +55,17 @@ void free_game(Game* game) {
     battle_free(&game->battle);
     sound_exit();
     input_exit(game->controllers);
-    //close_music_player(&game->music);
+    music_shutdown(&game->music);
 }
 
 void update(Game* game) {
     battle_update(&game->battle, game->controllers, &game->graphics.screen);
     bg_update(game->graphics.backgrounds);
-    //manage_music_loop(&game->music, BGM_BATTLE_00);
+
+    // Provitional placement for speeding up
+    if (game->battle.battle_time.time <= 60) {
+        music_set_speed(&game->music, 1.1);
+    } else  music_set_speed(&game->music, 1);
 }
 
 void start_room(Game* game) {
@@ -72,8 +76,10 @@ void start_room(Game* game) {
 
     game->graphics.backgrounds[0] = new_bg(-game->battle.camera.x*2,0,256,256,1,1,0,0,1);
     //game->graphics.backgrounds[1] = new_bg(game->battle.camera.x,133,256,137,1,0,0,0,1);
-
-    //start_song(&game->music, BGM_BATTLE_00);
+    game->music.current_song = BGM_BATTLE_00;
+    music_play(&game->music, BGM_BATTLE_00);
+    music_set_speed(&game->music, 1);
+    music_set_volume(&game->music, 1);
 }
 
 void render(Game* game) {

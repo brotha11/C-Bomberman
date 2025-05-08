@@ -104,10 +104,7 @@ void init_graphics(Graphics* graphics) {
     graphics->gui_symbols = new_sprite(14,14);
 }
 
-void tex_render(Graphics* graphics, Sprite* sprite, int spr, int x, int y) {
-
-    if (!sprite) return;
-
+void position_texture(Graphics* graphics, Sprite* sprite, int spr, int x, int y) {
     rect_set(graphics, &sprite->frame_rect, 
             (sprite->frame_x + sprite->frame)*graphics->sprites[spr].spr_width, 
                     sprite->frame_y*graphics->sprites[spr].spr_height, 
@@ -118,9 +115,16 @@ void tex_render(Graphics* graphics, Sprite* sprite, int spr, int x, int y) {
 
     rect_resolution_fix(graphics, &graphics->rect, x + sprite->x_off + w_diff/2, y + sprite->y_off + h_diff, 
         sprite->frame_rect.w * sprite->w_mult, sprite->frame_rect.h  * sprite->h_mult);
+}
 
-    SDL_RenderCopy(graphics->renderer, graphics->sprites[spr].sprite, &sprite->frame_rect, &graphics->rect);
+void tex_render(Graphics* graphics, Sprite* sprite, int spr, int x, int y) {
 
+    if (!sprite) return;
+
+    position_texture(graphics, sprite, spr, x, y);
+
+    SDL_RenderCopyEx(graphics->renderer, graphics->sprites[spr].sprite, &sprite->frame_rect, &graphics->rect,
+        sprite->angle, NULL, false);
 }
 
 void e_render(Graphics* graphics, Entity* entity, int cam_x, int cam_y) {

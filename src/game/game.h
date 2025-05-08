@@ -23,8 +23,7 @@ struct game
     bool game_running;
     Graphics graphics;
     Controller controllers[MAX_BATTLE_PLAYERS];
-    //Music music;
-    //Camera camera;
+    Music_manager music;
     Battle_manager battle;
 
     int base_x, base_y;

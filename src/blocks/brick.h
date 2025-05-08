@@ -17,6 +17,7 @@ struct brick {
     bool visible;
     
     Timer timer;
+    double break_mult;
     int dummy;
     double* p_delta_time;
 

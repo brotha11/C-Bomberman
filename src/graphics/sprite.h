@@ -74,7 +74,7 @@ typedef enum {
 #define BOMBER_GREEN_PATH "res/bomberman_g.png"
 
 #define BOMB_PATH "res/bomb.png"
-#define FIRE_PATH "res/fire.png"
+#define FIRE_PATH "res/fire_exp.png"
 #define MAP_01_PATH "res/map_01.png"
 #define BRICK_01_PATH "res/brick_01.png"
 #define POWER_UPS_PATH "res/power_ups.png"
@@ -92,6 +92,7 @@ typedef struct sprite {
 
     int sprite;
     SDL_Rect frame_rect;
+    SDL_Point center_point;
 
     double image_speed;
     Timer image_change;
@@ -100,6 +101,7 @@ typedef struct sprite {
     int width, height;
 
     double w_mult, h_mult;
+    double angle;
 
     int x_off, y_off;
     int frame_x_max;

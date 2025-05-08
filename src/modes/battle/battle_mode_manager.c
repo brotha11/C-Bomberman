@@ -14,7 +14,7 @@ void battle_init(Battle_manager* battle, double* delta_time) {
 
     battle->p_delta_time = delta_time;
 
-    battle->battle_time = new_timer(120);
+    battle->battle_time = new_timer(70);
 
     for (int i = 0; i < MAX_BATTLE_PLAYERS; ++i) {
         battle->players_on[i] = 0;

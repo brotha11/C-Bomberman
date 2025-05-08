@@ -55,6 +55,7 @@ void init_graphics(Graphics* graphics);
 
 // Object draw
 void tex_render(Graphics* graphics, Sprite* sprite, int spr, int x, int y);
+void position_texture(Graphics* graphics, Sprite* sprite, int spr, int x, int y);
 
 void e_render(Graphics* graphics, Entity* entity, int cam_x, int cam_y);
 void coll_render(Graphics* graphics, Collision* collision);
@@ -66,6 +67,7 @@ void gui_battle_render(Graphics* graphics, Battle_manager* battle);
 void background_render(Graphics* graphics, Background* backgrounds, Camera* camera);
 void draw_hitbox(Graphics* graphics, int x, int y, int w, int h);
 void update_window_size(Graphics* graphics);
+
 
 void free_graphics(Graphics* graphics);
 

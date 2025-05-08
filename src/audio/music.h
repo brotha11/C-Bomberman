@@ -1,34 +1,42 @@
 #ifndef MUSIC_H
 #define MUSIC_H
 
-#include "miniaudio.h"
+#include "SDL2/SDL.h"
 
 typedef enum MUSIC_LIST {
     BGM_BATTLE_00,
     BGM_AMOUNT,
 } MUSIC_LIST;
 
-typedef struct music {
-    ma_engine engine;
-    ma_sound sound[BGM_AMOUNT];
+#define BGM_BATTLE_00_PATH "res/bgm/battle_00.ogg"
 
-    MUSIC_LIST current_music;
-    ma_uint64 music_pos;
+typedef struct song {
+    short* data;               // PCM 16-bit intercalado
+    int sample_count;          // Cantidad de muestras por canal
+    int total_bytes;           // Tamaño total en bytes
+    int sample_rate;
+    int channels;
 
-    ma_uint64 intro_start;
-    ma_uint64 loop_end;
-    float play_speed;
+    double loop_start;
+    double loop_end;
+} Song;
+
+typedef struct music_manager {
+    SDL_AudioDeviceID device;
+    MUSIC_LIST current_song;
+    int current_sample;
+    int playing;
+    float speed;
     float volume;
-} Music;
+    SDL_AudioSpec spec;
+} Music_manager;
 
-Music init_music_player();
-void close_music_player(Music* music);
-void start_song(Music* music, MUSIC_LIST song);
-void manage_music_loop(Music* music, MUSIC_LIST song);
-void change_music_speed(Music* music, MUSIC_LIST song, float speed);
-void change_music_volume(Music* music, MUSIC_LIST song, float volume);
-
-ma_uint64 seconds_to_frames(ma_engine* engine, double seconds);
-
+void music_init(Music_manager* ms);
+int song_load(Song* s, const char* path, double intro, double end);
+void music_stop(Music_manager* mgr);
+void music_shutdown(Music_manager* mgr);
+void music_play(Music_manager* mgr, MUSIC_LIST song_id);
+void music_set_speed(Music_manager* mgr, float new_speed);
+void music_set_volume(Music_manager* mgr, float new_volume);
 
 #endif

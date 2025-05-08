@@ -2,7 +2,7 @@
 
 // Lerp function with a treshold
 double lerp(double a, double b, double t) {
-    const double threshold = 0.001;
+    const double threshold = 0.01;
     if (fabs(b - a) < threshold) {
         return b;
     }

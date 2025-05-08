@@ -24,6 +24,7 @@ struct fire {
     int width, height;
     int type;
     Timer timer;
+    double time_mult;
     int length;
     int direction;
     bool visible;

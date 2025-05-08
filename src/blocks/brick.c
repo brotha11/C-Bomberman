@@ -14,6 +14,7 @@ void add_brick(Brick** bricks, Collision** head, int x, int y, int width, int he
     new_brick->visible = true;
     new_brick->dummy = x;
     new_brick->p_delta_time = delta;
+    new_brick->break_mult = 1;
 
     *bricks = new_brick;
 }
@@ -31,18 +32,14 @@ void bri_update(Brick** bricks, Fire** fires, Collision** collision, Power_up** 
             continue;  
         }
 
-        if (coll_fire(fires,current->coll->x,current->coll->y,current->coll->width, current->coll->height)) {
-            current->broken = true;
-        }
-
-        // Animate
-        if (current->broken) {
-            if (current->sprite.frame_x < MAX_BRICK_FRAMES) 
-                animate_sprite_timer(&current->sprite, current->timer.time, EXPLOSION_TIME, current->p_delta_time);
-            if (current->timer.time == 1) current->visible = false;
-        }
-
-        if (current->broken) {
+        if (!current->broken) {
+            Fire* fire = coll_fire(fires,current->coll->x,current->coll->y,current->coll->width, current->coll->height);
+            if (fire) {
+                current->broken = true;
+                current->break_mult = fire->time_mult;
+                current->timer.time = EXPLOSION_TIME*current->break_mult;
+            }
+        } else {
             if (tick_timer(&current->timer, current->p_delta_time) == 0) {}
             else {
                 spawn_power(powers, current->coll->x, current->coll->y, current->p_delta_time);
@@ -50,6 +47,12 @@ void bri_update(Brick** bricks, Fire** fires, Collision** collision, Power_up** 
                 current = next_brick;
                 continue;
             }
+        }
+        // Animate
+        if (current->broken) {
+            if (current->sprite.frame_x < MAX_BRICK_FRAMES) 
+                animate_sprite_timer(&current->sprite, current->timer.time, EXPLOSION_TIME*current->break_mult, current->p_delta_time);
+            if (current->timer.time <= *current->p_delta_time) current->visible = false;
         }
 
         current = next_brick;
