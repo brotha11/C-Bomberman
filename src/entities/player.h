@@ -43,6 +43,7 @@ struct player {
     int bomb_amount, bombs_placed;
     int bomb_action;
     int kick_power;
+    int power_glove_power;
     int id;
     int action;
     int speed_ups;

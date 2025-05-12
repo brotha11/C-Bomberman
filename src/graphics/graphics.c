@@ -262,6 +262,16 @@ void gui_battle_render(Graphics* graphics, Battle_manager* battle) {
     tex_render(graphics, &graphics->score_gui, TEX_BATTLE_MODE_SCORE, -get_center_x(&graphics->screen, 256),0);
     int CLOCK_X = -get_center_x(&graphics->screen, 256) + 10;
 
+    // Texture Blend mode for clock, numbers and colon
+    SDL_SetTextureBlendMode(graphics->sprites[TEX_GUI_SYMBOLS].sprite, SDL_BLENDMODE_BLEND);
+
+    // Blink red on odd numbered seconds
+    if ((int)battle->battle_time.time%2 == 1 && battle->battle_time.time < 60) {
+        SDL_SetTextureColorMod(graphics->sprites[TEX_GUI_SYMBOLS].sprite, 255, 50, 50);
+    } else {
+        SDL_SetTextureColorMod(graphics->sprites[TEX_GUI_SYMBOLS].sprite, 255, 255, 255);
+    }
+
     // CLOCK
     graphics->gui_symbols.frame_x = SY_CLOCK;
         tex_render(graphics, &graphics->gui_symbols, TEX_GUI_SYMBOLS, CLOCK_X, 4); 
@@ -286,6 +296,10 @@ void gui_battle_render(Graphics* graphics, Battle_manager* battle) {
 
 
     // Bomber faces
+
+    // Turn off tint
+    SDL_SetTextureColorMod(graphics->sprites[TEX_GUI_SYMBOLS].sprite, 255, 255, 255);
+
     int bomber_places = CLOCK_X+64;
     int separation = 36;
     int pos = 0;

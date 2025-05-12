@@ -38,6 +38,7 @@ struct bomb {
 
     int x,y;
     int width, height;
+    int held;
 
     Timer timer;
     int blast_radius;

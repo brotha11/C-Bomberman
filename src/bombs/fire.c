@@ -1,5 +1,6 @@
 #include "fire.h"
 #include "bomb.h"
+#include "../blocks/brick.h"
 
 void add_fire(Fire** fires, Bomb** bombs, Collision** collision, Power_up** powers, Player* owner,
     int x, int y, int direction, int length, int type, bool visible, bool center) {
@@ -144,6 +145,11 @@ void add_fire(Fire** fires, Bomb** bombs, Collision** collision, Power_up** powe
             if (cblock) {
                 // Stop piercing blow only on non-brick blocks
                 if (type != BT_PIERCING || cblock->type != BRICK) {
+                    follow = 0;
+                    vis = false;
+                }
+                // Stop if its a broken brick (Avoid destroying items accidentally with piercing bombs)
+                if (type == BT_PIERCING && cblock->type == BRICK && cblock->broken == 1) {
                     follow = 0;
                     vis = false;
                 }

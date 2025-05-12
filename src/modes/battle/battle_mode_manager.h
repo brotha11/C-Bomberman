@@ -12,6 +12,9 @@
 #include "../../pickups/powerup.h"
 #include "../../rooms/camera.h"
 #include "../../game/timer.h"
+#include "../../audio/music.h"
+
+#define TRANSITION_WIN 2
 
 typedef enum {
     BATTLE_MENU_PLAYERS,
@@ -33,24 +36,27 @@ typedef struct battle_manager {
     Power_up* power_ups;
     Collision* collision;
     Entity* entities;
+
+    Music_manager* p_music;
     
     Camera camera;
 
     Timer battle_time;
+    Timer transition_time;
     
     double* p_delta_time;
 
     int state;
     int win_goal;
     int current_map;
+    int restart_music_on_load;
 
 } Battle_manager;
 
-void battle_init(Battle_manager* battle, double* delta_time);
+void battle_init(Battle_manager* battle, Music_manager* p_mus, double* delta_time);
 void battle_selection(Battle_manager* battle);
 void battle_load(Battle_manager* battle, Screen* screen);
 void battle_update(Battle_manager* battle, Controller* controllers, Screen* screen);
 void battle_free(Battle_manager* battle);
-void battle_clock_count(int* clock, int* second);
 
 #endif

@@ -14,6 +14,7 @@ Player new_player(Entity** head, int x, int y, int w, int h, double max, int id,
     new.bombs_placed = 0;
     new.bomb_action = 0;
     new.kick_power = 0;
+    new.power_glove_power = 0;
 
     new.base->sprite.frame_x_max = 4;
     new.base->sprite.x_off = -2;

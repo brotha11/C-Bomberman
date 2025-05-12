@@ -38,6 +38,7 @@ void bri_update(Brick** bricks, Fire** fires, Collision** collision, Power_up** 
                 current->broken = true;
                 current->break_mult = fire->time_mult;
                 current->timer.time = EXPLOSION_TIME*current->break_mult;
+                current->coll->broken = 1; // Set broken flag on collision
             }
         } else {
             if (tick_timer(&current->timer, current->p_delta_time) == 0) {}

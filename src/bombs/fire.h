@@ -18,6 +18,9 @@ typedef struct bomb Bomb;
 struct player;
 typedef struct player Player;
 
+struct brick;
+typedef struct brick Brick;
+
 struct fire {
 
     int x, y;

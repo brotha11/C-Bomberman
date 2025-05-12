@@ -16,6 +16,7 @@ typedef enum {
     SFX_DEATH_VC1,
     SFX_DEATH_VC2,
     SFX_DEATH_VC3,
+    SFX_HURRY_VC,
     TOTAL_SOUNDS
 } SFX;
 

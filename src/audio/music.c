@@ -14,6 +14,8 @@ void music_init(Music_manager* ms) {
     ms->speed = 1.0f;
     
     song_load(&songs[BGM_BATTLE_00], BGM_BATTLE_00_PATH, 6.530, 84.888);
+    song_load(&songs[BGM_BATTLE_01], BGM_BATTLE_01_PATH, 2.860, 51.450);
+    song_load(&songs[BGM_BATTLE_94], BGM_BATTLE_94_PATH, 3.187, 79.645);
 }
 
 
@@ -53,26 +55,36 @@ static void music_callback(void* userdata, Uint8* stream, int len) {
 
     short* out = (short*)stream;
     for (int i = 0; i < samples_requested; ++i) {
-        if (p->current_sample >= loop_end_sample)
-            p->current_sample = loop_start_sample;
+        // Manejar el loop con posición flotante
+        if (p->current_sample >= loop_end_sample) {
+            p->current_sample = loop_start_sample + (p->current_sample - loop_end_sample);
+        }
 
-        if (p->current_sample >= s->sample_count) {
+        // Verificar límites superiores
+        if (p->current_sample >= s->sample_count - 1) {
             memset(&out[i * s->channels], 0, sizeof(short) * s->channels);
             continue;
         }
 
-        // Aplica volumen DIRECTAMENTE (sin memcpy previo)
+        // Interpolación lineal
+        int pos_int = (int)p->current_sample;
+        float frac = p->current_sample - pos_int;
+        
         for (int c = 0; c < s->channels; ++c) {
-            out[i * s->channels + c] = (short)(s->data[p->current_sample * s->channels + c] * p->volume);
+            short sample0 = s->data[pos_int * s->channels + c];
+            short sample1 = s->data[(pos_int + 1) * s->channels + c];
+            float interpolated = sample0 * (1.0f - frac) + sample1 * frac;
+            out[i * s->channels + c] = (short)(interpolated * p->volume);
         }
-        p->current_sample++;
+        
+        p->current_sample += p->speed;
     }
 }
 
 void music_play(Music_manager* mgr, MUSIC_LIST song_id) {
     Song* s = &songs[song_id];
     mgr->current_song = song_id;
-    mgr->current_sample = 0;
+    mgr->current_sample = 0.0f;
     mgr->playing = 1;
 
     if (mgr->device == 0) {
@@ -100,33 +112,18 @@ void music_play(Music_manager* mgr, MUSIC_LIST song_id) {
 }
 
 void music_set_speed(Music_manager* mgr, float new_speed) {
-    if (mgr->speed == new_speed) return;  // No hacer nada si ya está en la velocidad deseada
-
-    // Pausar el audio y guardar la posición actual
-    SDL_PauseAudioDevice(mgr->device, 1);
-    int saved_sample = mgr->current_sample;
-
-    // Cerrar el dispositivo actual
-    SDL_CloseAudioDevice(mgr->device);
-
-    // Reconfigurar la frecuencia de muestreo según la velocidad
-    mgr->spec.freq = (int)(songs[mgr->current_song].sample_rate * new_speed);
     mgr->speed = new_speed;
-
-    // Reabrir el dispositivo con la nueva configuración
-    mgr->device = SDL_OpenAudioDevice(NULL, 0, &mgr->spec, NULL, 0);
-    if (mgr->device == 0) {
-        fprintf(stderr, "Error al reiniciar audio: %s\n", SDL_GetError());
-        return;
-    }
-
-    // Restaurar la posición de reproducción y reanudar
-    mgr->current_sample = saved_sample;
-    SDL_PauseAudioDevice(mgr->device, 0);
 }
 
 void music_set_volume(Music_manager* mgr, float volume) {
     mgr->volume = SDL_clamp(volume, 0.0f, 1.0f);
+}
+
+void music_goto_intro(Music_manager* mgr) {
+    Song* s = &songs[mgr->current_song];
+
+    int loop_start_sample = (int)(s->loop_start * s->sample_rate);
+    mgr->current_sample = loop_start_sample;
 }
 
 void music_stop(Music_manager* mgr) {

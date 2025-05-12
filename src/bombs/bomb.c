@@ -18,6 +18,7 @@ void add_bomb(Bomb** head, Collision** colls, Player* owner_bomb, Entity** e_hea
     new_bomb->blast_radius = blast;
 
     new_bomb->timer = new_timer(BOMB_TIMER);
+    new_bomb->held = 0;
 
     // Set bomb type
     new_bomb->type = btype;

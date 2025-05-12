@@ -1,6 +1,6 @@
 #include "battle_mode_manager.h"
 
-void battle_init(Battle_manager* battle, double* delta_time) {
+void battle_init(Battle_manager* battle, Music_manager* p_mus, double* delta_time) {
     battle->bombs = NULL;
     battle->bricks = NULL;
     battle->collision = NULL;
@@ -11,10 +11,13 @@ void battle_init(Battle_manager* battle, double* delta_time) {
     battle->current_map = 0;
     battle->win_goal = 0;
     battle->state = BATTLE_MENU_PLAYERS;
+    battle->restart_music_on_load = 1;
 
     battle->p_delta_time = delta_time;
+    battle->p_music = p_mus;
 
     battle->battle_time = new_timer(70);
+    battle->transition_time = new_timer(TRANSITION_WIN);
 
     for (int i = 0; i < MAX_BATTLE_PLAYERS; ++i) {
         battle->players_on[i] = 0;
@@ -33,6 +36,14 @@ void battle_selection(Battle_manager* battle) {
 
 void battle_load(Battle_manager* battle, Screen* screen) {
     battle->camera = new_camera(get_center_x(screen, 256) + 8, get_center_y(screen, 224), BASE_WIDTH, BASE_HEIGHT, 0.25f, CAM_FOLLOW);
+
+    if (battle->restart_music_on_load == 1) {
+        music_play(battle->p_music, BGM_BATTLE_94);
+        music_set_speed(battle->p_music, 1);
+        music_set_volume(battle->p_music, 0.8);
+
+        battle->restart_music_on_load = 0;
+    }
 
     int base_x = 48;
     int base_y = 48;
@@ -115,17 +126,13 @@ void battle_load(Battle_manager* battle, Screen* screen) {
 }
 
 void battle_update(Battle_manager* battle, Controller* controllers, Screen* screen) {
-
     battle->camera.follow_x = get_center_x(screen, 256) + 8;
     battle->camera.follow_y = get_center_y(screen, 224);
 
     int alive_players = MAX_BATTLE_PLAYERS;
 
-    tick_timer(&battle->battle_time, battle->p_delta_time);
-
     int gc = 0;
     for (int p = 0; p < MAX_BATTLE_PLAYERS; ++p) {
-
         if (battle->battle_time.time <= 0) // Times up
         {
            player_kill(&battle->players[p], false);
@@ -142,8 +149,20 @@ void battle_update(Battle_manager* battle, Controller* controllers, Screen* scre
 
 
         gc++;
-        if (battle->players[p].base->alive == false && battle->players[p].death_timer.time == 0) alive_players--;
+        if (battle->players[p].base->alive == false) alive_players--;
     }
+
+    // Hurry up
+    if (battle->battle_time.time <= 60 && battle->p_music->speed == 1) {
+        music_set_speed(battle->p_music, 1.2);
+        music_goto_intro(battle->p_music);
+        play_sound(SFX_HURRY_VC);
+    } 
+    if (battle->battle_time.time > 60) music_set_speed(battle->p_music, 1);
+
+    // Tick only when more than one player is alive
+    // This is to avoid death by time out if one won
+    if (alive_players > 1) tick_timer(&battle->battle_time, battle->p_delta_time);
 
     b_update(&battle->bombs, &battle->fires, &battle->collision, &battle->power_ups, &battle->entities);
     f_update(&battle->fires, &battle->bombs, battle->p_delta_time);
@@ -151,14 +170,20 @@ void battle_update(Battle_manager* battle, Controller* controllers, Screen* scre
     pw_update(&battle->power_ups, &battle->fires);
     cam_update(&battle->camera);
 
+    // Last bomberman standing
     if (alive_players <= 1) {
-        for (int p = 0; p < MAX_BATTLE_PLAYERS; ++p) {
-            if (battle->players[p].base->alive == true) {
-                battle->players_wins[p]++;
+        if (tick_timer(&battle->transition_time, battle->p_delta_time) == 1) {
+            // Assing trophy
+            for (int p = 0; p < MAX_BATTLE_PLAYERS; ++p) {
+                if (battle->players[p].base->alive == true) {
+                    battle->players_wins[p]++;
+                }
             }
+            battle->transition_time.time = TRANSITION_WIN;
+            battle_load(battle, screen);
         }
-        battle_load(battle, screen);
     }
+    
     /*if (alive_players == 1) {
         battle->camera.state = CAM_FOLLOW;
         set_follow(&battle->camera, battle->players[0].base.x - battle->camera.width/2, 

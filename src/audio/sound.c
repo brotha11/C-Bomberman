@@ -13,13 +13,14 @@ void sound_init() {
 
     sfx[SFX_PLACE_BOMB] = Mix_LoadWAV("res/sfx/place_bomb.wav");
     sfx[SFX_BLOW_UP_R] = Mix_LoadWAV("res/sfx/explosion.wav");
-    sfx[SFX_POWER_UP] = Mix_LoadWAV("res/sfx/power.wav");
+    sfx[SFX_POWER_UP] = Mix_LoadWAV("res/sfx/powerup_94.wav");
     sfx[SFX_KICK] = Mix_LoadWAV("res/sfx/kick_94.wav");
     sfx[SFX_DEATH] = Mix_LoadWAV("res/sfx/death_94.wav");
     sfx[SFX_DEATH_VC0] = Mix_LoadWAV("res/sfx/vc_death_00.wav");
     sfx[SFX_DEATH_VC1] = Mix_LoadWAV("res/sfx/vc_death_01.wav");
     sfx[SFX_DEATH_VC2] = Mix_LoadWAV("res/sfx/vc_death_02.wav");
     sfx[SFX_DEATH_VC3] = Mix_LoadWAV("res/sfx/vc_death_03.wav");
+    sfx[SFX_HURRY_VC] = Mix_LoadWAV("res/sfx/vc_hurry.wav");
 
     for (int i = 0; i < TOTAL_SOUNDS; i++) {
         if (!sfx[i]) {

@@ -8,6 +8,7 @@ void add_collision(Collision** head, int x, int y, int width, int height, int ty
     new_Collision->width = width;
     new_Collision->height = height;
     new_Collision->type = type;
+    new_Collision->broken = 0;
     
     new_Collision->next = *head;
     *head = new_Collision;

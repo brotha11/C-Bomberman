@@ -27,6 +27,7 @@ struct game
     Battle_manager battle;
 
     int base_x, base_y;
+    float fps;
 
     Profile main_profile;
     Profile type0_profile;

@@ -17,6 +17,7 @@ struct collision {
     int width;
     int height;
     int type;
+    int broken;
 
     struct collision* next;
 };

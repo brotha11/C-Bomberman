@@ -8,6 +8,8 @@ void init_game(Game* game) {
     init_graphics(&game->graphics);
     sound_init();
     music_init(&game->music);
+
+    game->fps = 0;
     
     // Key profiles
     game->main_profile = set_profile(SDL_SCANCODE_W, SDL_SCANCODE_S,
@@ -18,15 +20,32 @@ void init_game(Game* game) {
         SDL_SCANCODE_LEFT, SDL_SCANCODE_RIGHT, SDL_SCANCODE_RSHIFT);
     game->nouse_profile = set_profile(0, 0, 0, 0, 0);
 
-    battle_init(&game->battle, &game->delta_time);
+    battle_init(&game->battle, &game->music, &game->delta_time);
 
     start_room(game);
 }
 
 void run_game(Game* game) {
-    while (game->game_running) {
+    float fps_accumulator = 0.0f;
+    int fps_frames = 0;
+    const float fps_update_interval = 0.5f;  // Actualizar FPS cada 0.5 segundos (ajustable)
 
+    while (game->game_running) {
         game->delta_time = get_delta_time();
+    
+        // --- Cálculo de FPS ---
+        fps_accumulator += game->delta_time;
+        fps_frames++;
+
+        // Actualizar fps cada cierto tiempo (evita fluctuaciones bruscas)
+        if (fps_accumulator >= fps_update_interval) {
+            game->fps = (float)fps_frames / fps_accumulator;
+            fps_accumulator = 0.0f;
+            fps_frames = 0;
+            
+            // Opcional: Mostrar FPS en consola (para debug)
+            printf("FPS: %.1f\n", game->fps);
+        }
 
         update(game);
         render(game);
@@ -61,11 +80,6 @@ void free_game(Game* game) {
 void update(Game* game) {
     battle_update(&game->battle, game->controllers, &game->graphics.screen);
     bg_update(game->graphics.backgrounds);
-
-    // Provitional placement for speeding up
-    if (game->battle.battle_time.time <= 60) {
-        music_set_speed(&game->music, 1.1);
-    } else  music_set_speed(&game->music, 1);
 }
 
 void start_room(Game* game) {
@@ -76,10 +90,6 @@ void start_room(Game* game) {
 
     game->graphics.backgrounds[0] = new_bg(-game->battle.camera.x*2,0,256,256,1,1,0,0,1);
     //game->graphics.backgrounds[1] = new_bg(game->battle.camera.x,133,256,137,1,0,0,0,1);
-    game->music.current_song = BGM_BATTLE_00;
-    music_play(&game->music, BGM_BATTLE_00);
-    music_set_speed(&game->music, 1);
-    music_set_volume(&game->music, 1);
 }
 
 void render(Game* game) {
